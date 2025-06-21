@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "app/actions/analyze.js": {
+      "maxDuration": 30
+    }
+  }
+}
