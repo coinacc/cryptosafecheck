@@ -223,7 +223,10 @@ export default function AnalyticsPage() {
     if (amount === null || amount === undefined) return 'Not provided';
     return `$${amount.toFixed(4)}`;
   };
-  const formatNumber = (num) => num.toLocaleString();
+  const formatNumber = (num) => {
+    if (num === null || num === undefined || isNaN(num)) return '0';
+    return num.toLocaleString();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -251,7 +254,7 @@ export default function AnalyticsPage() {
               <div className="ml-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">Today's Requests</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatNumber(realTimeStats.today.totalRequests)}
+                  {formatNumber(realTimeStats?.today?.totalRequests)}
                 </p>
               </div>
             </div>
@@ -263,7 +266,7 @@ export default function AnalyticsPage() {
               <div className="ml-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">Today's Cost</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(realTimeStats.today.totalCost)}
+                  {formatCurrency(realTimeStats?.today?.totalCost)}
                 </p>
               </div>
             </div>
@@ -275,7 +278,7 @@ export default function AnalyticsPage() {
               <div className="ml-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">Cache Hit Rate</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {realTimeStats.cacheHitRate}%
+                  {realTimeStats?.cacheHitRate || '0'}%
                 </p>
               </div>
             </div>
@@ -287,7 +290,7 @@ export default function AnalyticsPage() {
               <div className="ml-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">Avg Response Time</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {Math.round(realTimeStats.today.avgResponseTime)}ms
+                  {Math.round(realTimeStats?.today?.avgResponseTime || 0)}ms
                 </p>
               </div>
             </div>
@@ -300,7 +303,7 @@ export default function AnalyticsPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Daily Requests</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analytics.dailyData}>
+              <BarChart data={analytics?.dailyData || []}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
@@ -314,7 +317,7 @@ export default function AnalyticsPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Daily Costs</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analytics.dailyData}>
+              <LineChart data={analytics?.dailyData || []}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
@@ -332,31 +335,31 @@ export default function AnalyticsPage() {
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Total Requests</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatNumber(analytics.totals.totalRequests)}
+                {formatNumber(analytics?.totals?.totalRequests)}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Total Tokens</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatNumber(analytics.totals.totalTokens)}
+                {formatNumber(analytics?.totals?.totalTokens)}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Total Cost</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatCurrency(analytics.totals.totalCost)}
+                {formatCurrency(analytics?.totals?.totalCost)}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Cached Requests</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatNumber(analytics.totals.cachedRequests)}
+                {formatNumber(analytics?.totals?.cachedRequests)}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Errors</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatNumber(analytics.totals.errors)}
+                {formatNumber(analytics?.totals?.errors)}
               </p>
             </div>
           </div>
@@ -378,7 +381,7 @@ export default function AnalyticsPage() {
                 </tr>
               </thead>
               <tbody>
-                {analytics.recentRequests.slice(0, 20).map((request, index) => (
+                {(analytics?.recentRequests || []).slice(0, 20).map((request, index) => (
                   <tr key={index} className="border-b border-gray-100 dark:border-gray-700">
                     <td className="py-2 text-gray-600 dark:text-gray-400">
                       {new Date(request.timestamp).toLocaleTimeString()}
@@ -390,18 +393,18 @@ export default function AnalyticsPage() {
                       }
                     </td>
                     <td className="py-2 text-gray-900 dark:text-white">
-                      {formatNumber(request.totalTokens)}
+                      {formatNumber(request?.totalTokens)}
                     </td>
                     <td className="py-2 text-gray-900 dark:text-white">
                       <span className={request.cost === null ? 'text-gray-500 italic' : ''}>
-                        {formatCurrency(request.cost)}
+                        {formatCurrency(request?.cost)}
                       </span>
                       {request.costSource === 'ai_provided' && (
                         <span className="ml-1 text-xs text-green-600" title="Cost provided by AI">✓</span>
                       )}
                     </td>
                     <td className="py-2 text-gray-900 dark:text-white">
-                      {Math.round(request.responseTime)}ms
+                      {Math.round(request?.responseTime || 0)}ms
                     </td>
                     <td className="py-2">
                       {request.cached ? (

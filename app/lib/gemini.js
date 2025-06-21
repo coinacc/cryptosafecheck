@@ -52,7 +52,7 @@ function cleanSources(sources) {
 }
 
 // Main analysis function - comprehensive crypto project analysis
-export const analyzeUrl = async (userInput, sessionId = null) => {
+export const analyzeUrl = async (userInput, sessionId = null, request = null) => {
   const startTime = Date.now();
   let cached = false;
 
@@ -69,7 +69,7 @@ export const analyzeUrl = async (userInput, sessionId = null) => {
       cached: true,
       success: true,
       scanType: 'full'
-    });
+    }, request);
     return cachedResult;
   }
 
@@ -413,7 +413,7 @@ export const analyzeUrl = async (userInput, sessionId = null) => {
     success: apiSuccess,
     error: apiError,
     scanType: 'full'
-  });
+  }, request);
 
   console.log(`✅ Analysis completed for: ${userInput}`);
 

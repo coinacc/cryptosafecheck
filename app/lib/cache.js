@@ -1,9 +1,8 @@
-import { kv } from '@vercel/kv';
+import { supabaseAdmin } from './supabase';
 import crypto from 'crypto';
 
 // Cache configuration
-const CACHE_TTL = 60 * 60 * 24; // 24 hours in seconds
-const CACHE_PREFIX = 'aicryptocheck:';
+const CACHE_TTL_HOURS = 24; // 24 hours
 
 /**
  * Generate a cache key for a given URL/input
@@ -11,31 +10,45 @@ const CACHE_PREFIX = 'aicryptocheck:';
 function generateCacheKey(input, scanType = 'full') {
   // Normalize the input (lowercase, trim)
   const normalized = input.toLowerCase().trim();
-
+  
   // Create a hash for consistent key generation
   const hash = crypto.createHash('md5').update(normalized).digest('hex');
-
-  return `${CACHE_PREFIX}${scanType}:${hash}`;
+  
+  return `${scanType}:${hash}`;
 }
 
 /**
- * Get cached analysis result
+ * Get cached analysis result from Supabase
  */
 export async function getCachedAnalysis(input, scanType = 'full') {
   try {
     const cacheKey = generateCacheKey(input, scanType);
-    const cached = await kv.get(cacheKey);
+    const cutoffTime = new Date(Date.now() - (CACHE_TTL_HOURS * 60 * 60 * 1000));
 
-    if (cached) {
-      console.log(`Cache HIT for: ${input} (${scanType})`);
-      console.log(`🔍 Cached data red_flags count: ${cached.red_flags?.length || 0}`);
-      console.log(`🔍 Cached data community_warnings count: ${cached.community_warnings?.length || 0}`);
-      console.log(`🔍 Cached at: ${cached._cachedAt}`);
-      return cached;
+    // Query Supabase for cached result
+    const { data, error } = await supabaseAdmin
+      .from('analytics_records')
+      .select('*')
+      .eq('project', input)
+      .eq('scan_type', scanType)
+      .eq('success', true)
+      .eq('cached', false) // Get original analysis, not cached hits
+      .gte('timestamp', cutoffTime.toISOString())
+      .order('timestamp', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      console.log(`Cache MISS for: ${input} (${scanType})`);
+      return null;
     }
 
-    console.log(`Cache MISS for: ${input} (${scanType})`);
+    // Check if we have the full analysis result stored
+    // For now, return null to force fresh analysis
+    // TODO: Store full analysis results in a separate table if needed
+    console.log(`Cache data found but returning MISS to ensure fresh analysis: ${input} (${scanType})`);
     return null;
+
   } catch (error) {
     console.error('Cache read error:', error);
     return null; // Fail gracefully
@@ -43,23 +56,14 @@ export async function getCachedAnalysis(input, scanType = 'full') {
 }
 
 /**
- * Store analysis result in cache
+ * Store analysis result - handled by analytics tracking
+ * Analysis results are now tracked via analytics_records table
  */
 export async function setCachedAnalysis(input, result, scanType = 'full') {
   try {
-    const cacheKey = generateCacheKey(input, scanType);
-
-    // Add cache metadata
-    const cacheData = {
-      ...result,
-      _cached: true,
-      _cachedAt: new Date().toISOString(),
-      _input: input,
-      _scanType: scanType
-    };
-
-    await kv.set(cacheKey, cacheData, { ex: CACHE_TTL });
-    console.log(`Cached analysis for: ${input} (${scanType})`);
+    // Analysis results are automatically stored via trackApiUsage
+    // This function is kept for compatibility but doesn't need to do anything
+    console.log(`Analysis stored via analytics tracking for: ${input} (${scanType})`);
   } catch (error) {
     console.error('Cache write error:', error);
     // Don't throw - caching is optional
@@ -67,28 +71,37 @@ export async function setCachedAnalysis(input, result, scanType = 'full') {
 }
 
 /**
- * Clear cache for a specific input (useful for debugging)
+ * Clear cache for a specific input (for development)
  */
 export async function clearCachedAnalysis(input) {
   try {
-    const cacheKey = generateCacheKey(input);
-    await kv.del(cacheKey);
-    console.log(`Cleared cache for: ${input}`);
+    // In development, we could delete analytics records for this input
+    // But for now, we'll keep all analytics data
+    console.log(`Cache clear requested for: ${input} (keeping analytics data)`);
   } catch (error) {
     console.error('Cache clear error:', error);
   }
 }
 
 /**
- * Get cache statistics (useful for monitoring)
+ * Get cache statistics
  */
 export async function getCacheStats() {
   try {
-    const keys = await kv.keys(`${CACHE_PREFIX}*`);
+    const { count, error } = await supabaseAdmin
+      .from('analytics_records')
+      .select('*', { count: 'exact', head: true })
+      .eq('success', true);
+
+    if (error) {
+      console.error('Cache stats error:', error);
+      return { error: 'Unable to fetch cache stats' };
+    }
+
     return {
-      totalCachedItems: keys.length,
-      cachePrefix: CACHE_PREFIX,
-      ttl: CACHE_TTL
+      totalAnalysisRecords: count || 0,
+      ttlHours: CACHE_TTL_HOURS,
+      storage: 'supabase'
     };
   } catch (error) {
     console.error('Cache stats error:', error);

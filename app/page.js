@@ -18,7 +18,6 @@ export default function Home() {
   const [estimatedTime, setEstimatedTime] = useState(null);
   const [scanType, setScanType] = useState('full'); // Only full analysis now
   const [isResettingLimit, setIsResettingLimit] = useState(false);
-  const [isClearingCache, setIsClearingCache] = useState(false);
   const [progressInterval, setProgressInterval] = useState(null);
   const [isClient, setIsClient] = useState(false);
 
@@ -312,7 +311,7 @@ export default function Home() {
         const data = await response.json();
         console.log('Rate limit reset:', data);
         // Clear any existing error that might be about rate limits
-        if (error && error.includes('free scans')) {
+        if (error && (error.includes('rate limit') || error.includes('maximum'))) {
           setError(null);
         }
       } else {
@@ -325,99 +324,25 @@ export default function Home() {
     }
   };
 
-  // Dev-only function to clear all cache with enhanced feedback
-  const handleClearAllCache = async () => {
-    if (!isClient || window.location.hostname !== 'localhost') return;
-
-    console.log('🗑️ Clear cache button clicked');
-    const originalError = error;
-
-    setIsClearingCache(true);
-    setError('🔄 Clearing all cache...');
-
-    try {
-      console.log('🗑️ Making request to /api/dev/clear-all-cache');
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-
-      const response = await fetch('/api/dev/clear-all-cache', {
-        method: 'GET',
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        },
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      console.log('🗑️ Response status:', response.status);
-      console.log('🗑️ Response ok:', response.ok);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('🗑️ Cache cleared successfully:', data);
-
-        if (data.success) {
-          const message = `✅ Cache cleared successfully!\n` +
-            `• Deleted: ${data.cleared} items\n` +
-            `• Found: ${data.totalFound} total items\n` +
-            `• Failed: ${data.failedKeys?.length || 0} items\n` +
-            `• Remaining: ${data.remainingAfterCleanup || 0} items`;
-
-          setError(message);
-
-          // Clear the success message after 5 seconds
-          setTimeout(() => {
-            setError(originalError);
-          }, 5000);
-        } else {
-          setError(`❌ Cache clearing failed: ${data.error || 'Unknown error'}`);
-        }
-      } else {
-        const errorData = await response.text();
-        console.error('🗑️ Failed to clear cache:', errorData);
-        setError(`❌ Failed to clear cache: ${response.status} ${response.statusText}`);
-      }
-    } catch (err) {
-      console.error('🗑️ Error clearing cache:', err);
-
-      if (err.name === 'AbortError') {
-        setError('❌ Cache clearing timed out (30s). Please try again.');
-      } else {
-        setError(`❌ Error clearing cache: ${err.message}`);
-      }
-    } finally {
-      setIsClearingCache(false);
-
-      // Clear error messages after 5 seconds if they're not success messages
-      setTimeout(() => {
-        if (error && !error.includes('✅')) {
-          setError(originalError);
-        }
-      }, 5000);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-trust-50 dark:bg-trust-900">
       {/* Header */}
-      <div className="flex items-center justify-between px-8 py-6">
-        <div className="flex items-center space-x-3">
+      <div className="flex items-center justify-between px-4 xs:px-6 md:px-8 py-4 md:py-6">
+        <div className="flex items-center space-x-2 xs:space-x-3">
           <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
             <div className="relative">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center shadow-sm">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-sm">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
                 </svg>
               </div>
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-trust-900"></div>
             </div>
-            <span className="text-lg font-semibold text-trust-900 dark:text-white">CryptoSafeCheck</span>
+            <span className="text-base xs:text-lg font-semibold text-trust-900 dark:text-white">CryptoSafeCheck</span>
           </Link>
         </div>
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-3 xs:space-x-4 md:space-x-6">
           <Link href="/" className="text-sm text-trust-700 dark:text-trust-300 font-medium hover:text-trust-900 dark:hover:text-trust-100 transition-colors">
             Home
           </Link>
@@ -431,23 +356,9 @@ export default function Home() {
                 onClick={handleResetRateLimit}
                 disabled={isResettingLimit}
                 className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50 transition-colors"
-                title="Reset free scan limit (Dev only)"
+                title="Reset rate limit for your IP (Dev only)"
               >
                 {isResettingLimit ? 'Resetting...' : 'Reset Limit'}
-              </button>
-              <button
-                onClick={handleClearAllCache}
-                disabled={isClearingCache}
-                className="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded hover:bg-orange-200 disabled:opacity-50 transition-colors flex items-center space-x-1"
-                title="Clear all cached analyses, rate limits, and temporary data (Dev only)"
-              >
-                {isClearingCache && (
-                  <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                )}
-                <span>{isClearingCache ? 'Clearing...' : 'Clear Cache'}</span>
               </button>
             </div>
           )}
@@ -456,11 +367,11 @@ export default function Home() {
 
       {/* Main Content Card - Hide when analyzing or results are shown */}
       {!isAnalyzing && !result && (
-        <div className="max-w-4xl mx-auto px-8 py-12">
-          <div className="bg-white dark:bg-trust-800 rounded-lg shadow-sm border border-trust-200 dark:border-trust-700 p-12">
+        <div className="max-w-4xl mx-auto px-4 xs:px-6 md:px-8 py-8 md:py-12">
+          <div className="bg-white dark:bg-trust-800 rounded-lg shadow-sm border border-trust-200 dark:border-trust-700 p-6 xs:p-8 md:p-12">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-semibold text-trust-900 dark:text-white mb-4">Analyze Crypto Projects</h1>
-              <p className="text-trust-600 dark:text-trust-400 text-lg">Enter a project name, symbol, website, or contract address to check for potential scam indicators</p>
+              <h1 className="text-2xl xs:text-3xl font-semibold text-trust-900 dark:text-white mb-4">Analyze Crypto Projects</h1>
+              <p className="text-trust-600 dark:text-trust-400 text-base xs:text-lg">Enter a project name, symbol, website, or contract address to check for potential scam indicators</p>
             </div>
       
           <form onSubmit={handleSubmit} className="mb-8">
@@ -474,7 +385,7 @@ export default function Home() {
                   placeholder="SafeMoon, bitcoin.org, or contract address"
                   required
                   autoFocus
-                  className="w-full p-4 pr-12 border border-trust-300 dark:border-trust-600 bg-white dark:bg-trust-700 text-trust-900 dark:text-white rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-base"
+                  className="w-full p-4 pr-12 border border-trust-300 dark:border-trust-600 bg-white dark:bg-trust-700 text-trust-900 dark:text-white rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-all duration-200 text-base shadow-sm hover:border-trust-400 dark:hover:border-trust-500"
                 />
                 {url && (
                   <button
@@ -495,7 +406,7 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={isAnalyzing || !url.trim()}
-                  className="w-full max-w-md bg-blue-600 text-white px-8 py-4 rounded-md hover:bg-blue-700 disabled:bg-trust-400 disabled:cursor-not-allowed flex items-center justify-center font-medium transition-colors duration-200"
+                  className="w-full max-w-md bg-primary-600 text-white px-8 py-4 rounded-md hover:bg-primary-700 disabled:bg-trust-400 disabled:cursor-not-allowed flex items-center justify-center font-medium transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
                 >
                   {isAnalyzing ? (
                     <>
@@ -517,28 +428,28 @@ export default function Home() {
               </div>
 
               {/* Analysis Features */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+              <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-6 border border-primary-200 dark:border-primary-800">
                 <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <span className="font-semibold text-blue-700 dark:text-blue-300">Comprehensive Analysis</span>
-                  <span className="text-sm text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">Free</span>
+                  <div className="w-3 h-3 bg-primary-500 rounded-full"></div>
+                  <span className="font-semibold text-primary-700 dark:text-primary-300">Comprehensive Analysis</span>
+                  <span className="text-sm text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-800 px-2 py-1 rounded">Free</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <ul className="text-trust-600 dark:text-trust-400 space-y-2">
                     <li className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                       <span>Team transparency verification</span>
                     </li>
                     <li className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                       <span>Technical security audits</span>
                     </li>
                     <li className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                       <span>Legal & regulatory status</span>
@@ -546,19 +457,19 @@ export default function Home() {
                   </ul>
                   <ul className="text-trust-600 dark:text-trust-400 space-y-2">
                     <li className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                       <span>Financial transparency</span>
                     </li>
                     <li className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                       <span>Community & marketing analysis</span>
                     </li>
                     <li className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                       <span>Product delivery assessment</span>
