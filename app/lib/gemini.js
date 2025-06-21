@@ -80,110 +80,60 @@ export const analyzeUrl = async (userInput, sessionId = null) => {
     sendProgress(sessionId, '🔍 Starting comprehensive analysis...', 'in_progress');
   }
 
-  // Create the system prompt with your new specification
-  const prompt = `### ROLE ###
-You are an expert crypto project analyst. Your sole purpose is to receive a single piece of user input, independently gather all necessary real-time information about it using your web search capabilities, and return a structured JSON analysis.
+  // Optimized system prompt for crypto project analysis
+  const prompt = `Analyze "${userInput}" as a crypto project analyst. Search for real-time data and return only JSON.
 
-### CORE TASK (Step-by-Step) ###
-1. **IDENTIFY:** First, analyze the "${userInput}" to determine what it is. It could be a project name (e.g., "Chainlink"), a token ticker ("LINK"), a token contract address ("0x514910771af9ca656af840dff83e8264ecf986ca"), a website URL, or something else. Make your best determination.
-2. **SEARCH:** Second, based on your identification, perform comprehensive web searches. You MUST actively search for information covering all analysis categories: team identity and reputation, technical security audits, legal and regulatory status, tokenomics and financial health, community sentiment and marketing tactics, and product development status.
-3. **ANALYZE:** Third, synthesize the information you gathered from your search. Critically evaluate the project against the detailed criteria and definitions provided below. Your analysis must be based *only* on the information you find.
-4. **FORMAT:** Finally, compile your complete analysis into the specified JSON format. You MUST return ONLY the raw JSON object as your final response, with no other text, greetings, or explanations.
+### ANALYSIS PROCESS ###
+1. **IDENTIFY**: Determine if input is project name, ticker, contract address, or URL
+2. **SEARCH**: Prioritize official sites → CoinGecko/CMC → GitHub → social media → regulatory sources
+3. **EVALUATE**: Rate each category using search results only (not training data)
+4. **RETURN**: JSON only, no other text
 
-### USER INPUT ###
-"userInput": "${userInput}"
+### RULES ###
+- Bitcoin/Ethereum base layers = VERY_SAFE
+- No crypto project = {"status": "not_applicable"}
+- Missing data = use most conservative rating + note in explanation
+- Base analysis on search results only
 
-### CRITERIA & DEFINITIONS ###
+### RATING SCALES ###
+**team_transparency**: VERIFIED → PARTIAL → PSEUDONYMOUS → ANONYMOUS → FAKE
+**technical_security**: AUDITED → PARTIALLY_AUDITED → UNAUDITED → FAILED_AUDIT → BACKDOOR_DETECTED  
+**legal_regulatory**: COMPLIANT → UNCLEAR → UNREGISTERED → CEASE_AND_DESIST → CRIMINAL_CHARGES
+**financial_transparency**: TRANSPARENT → PARTIAL → CONCERNING → PONZI_STRUCTURE → RUG_PULL_RISK
+**community_marketing**: ORGANIC → SHILLED → FAKE_FOLLOWERS → PUMP_SCHEME → CULT_LIKE
+**product_delivery**: DELIVERED → DELAYED → VAPORWARE → PLAGIARIZED → IMPOSSIBLE
 
-**Primary Rules:**
-1. **Data Source:** Your analysis MUST be based on the information you gather from your web search. Do not use your internal training data as a primary source for project-specific facts.
-2. **Base Layers:** The Bitcoin (BTC) and Ethereum (ETH) base layer protocols themselves are considered VERY_SAFE. This does not apply to tokens, dApps, or other projects built on top of them.
-3. **Non-Crypto:** If your search confirms the input is not a crypto project, you must return: {"status": "not_applicable"}.
-4. **Missing Information:** If your search cannot find reliable information for a specific category, you MUST select the most conservative/negative enum (e.g., ANONYMOUS, UNAUDITED, UNCLEAR) and state in the explanation that information could not be found. This is a critical rule.
+**safety_level**: VERY_SAFE (established, audited, verified) → SAFE (good transparency, minimal flags) → RISKY (some concerns) → DANGEROUS (clear scam indicators)
+**confidence**: HIGH (ample data) → MEDIUM (partial data) → LOW (minimal data)
 
-**Category Definitions:**
-- **team_transparency:**
-    - VERIFIED: Team members are public, with verifiable professional identities (e.g., LinkedIn).
-    - PARTIAL: Some team members are public, but key leadership or developers are not.
-    - PSEUDONYMOUS: Team uses consistent online identities, but real-world identities are unknown.
-    - ANONYMOUS: Team identities are completely unknown.
-    - FAKE: Evidence suggests team identities are stolen or fabricated.
-- **technical_security:**
-    - AUDITED: All key smart contracts have been audited by reputable third-party firms; reports are public.
-    - PARTIALLY_AUDITED: Some contracts are audited, or the audit is from a low-reputation firm.
-    - UNAUDITED: No evidence of a third-party security audit.
-    - FAILED_AUDIT: An audit revealed critical, unpatched vulnerabilities.
-    - BACKDOOR_DETECTED: Analysis reveals malicious code or significant centralization risks.
-    - OPEN_SOURCE: The codebase is public and verifiable on a platform like GitHub.
-- **legal_regulatory:**
-    - COMPLIANT: Appears to be registered and compliant in a known, major jurisdiction.
-    - UNCLEAR: The legal status or jurisdiction is not clearly stated (this is the default).
-    - UNREGISTERED: Operates in a jurisdiction requiring registration but has not done so.
-    - CEASE_AND_DESIST: Has received a cease-and-desist order from a regulatory body.
-    - SEC_ACTION: Targeted by the SEC as an unregistered security.
-    - CRIMINAL_CHARGES: Founders or the project entity face criminal charges.
-- **financial_transparency:**
-    - TRANSPARENT: Tokenomics, treasury, and allocations are clearly detailed and verifiable.
-    - PARTIAL: Some financial details are provided, but significant information is opaque.
-    - CONCERNING: Tokenomics show high whale concentration or large, unlocked team/VC allocations.
-    - PONZI_STRUCTURE: Value proposition relies on new investors paying earlier investors.
-    - RUG_PULL_RISK: High-risk indicators like unlocked liquidity or malicious token contract.
-    - WASH_TRADING: Evidence of fake trading volume on exchanges.
-- **community_marketing:**
-    - ORGANIC: Community growth appears genuine with healthy discussion.
-    - SHILLED: Marketing relies heavily on paid influencers, bots, or hype.
-    - FAKE_FOLLOWERS: Social media shows clear signs of purchased followers/engagement.
-    - PUMP_SCHEME: Community is focused on coordinated price manipulation.
-    - CULT_LIKE: Community is hostile to any criticism or questioning.
-    - DEAD: No significant community activity for an extended period.
-- **product_delivery:**
-    - DELIVERED: The main product is live and functional on a mainnet.
-    - DELAYED: A history of significantly missing roadmap deadlines.
-    - VAPORWARE: No functional product exists despite extensive marketing.
-    - PLAGIARIZED: The project's code or whitepaper is a direct copy of another project.
-    - IMPOSSIBLE: The stated goals are technically or theoretically impossible.
-
-**Safety Level & Confidence Definitions:**
-- **Safety Level:**
-    - VERY_SAFE: Established, regulated, fully verified team, and fully audited.
-    - SAFE: Good transparency, has security audits, and minimal red flags.
-    - RISKY: Several concerning elements like an anonymous team, no audit, or is highly speculative.
-    - DANGEROUS: Clear scam indicators, regulatory action, or malicious intent.
-- **Confidence Score:**
-    - HIGH: Your search returned ample, high-quality, and consistent data across most categories.
-    - MEDIUM: Your search returned data for some categories but it was sparse, low-quality, or contradictory in others.
-    - LOW: Your search returned very little or no reliable data. The analysis is based on weak signals.
-
-### OUTPUT FORMAT ###
-Return ONLY the raw JSON object below. Do not add any text before or after the JSON. Ensure the JSON is perfectly structured and valid.
-
+### JSON FORMAT ###
 {
   "status": "analyzed",
   "project_name": "string",
-  "project_type": "string (e.g., Layer 1, DeFi, Meme Coin, NFT Project)",
-  "blockchain_network": "string (e.g., Ethereum, Solana, Native)",
+  "project_type": "string",
+  "blockchain_network": "string", 
   "token_symbol": "string|null",
   "safety_level": "VERY_SAFE|SAFE|RISKY|DANGEROUS",
   "confidence": "HIGH|MEDIUM|LOW",
-  "team_transparency": "enum",
-  "team_transparency_explanation": "Brief explanation based on the criteria.",
-  "technical_security": "enum",
-  "technical_security_explanation": "Brief explanation based on the criteria.",
-  "legal_regulatory": "enum",
-  "legal_regulatory_explanation": "Brief explanation based on the criteria.",
-  "financial_transparency": "enum",
-  "financial_transparency_explanation": "Brief explanation based on the criteria.",
-  "community_marketing": "enum",
-  "community_marketing_explanation": "Brief explanation based on the criteria.",
-  "product_delivery": "enum",
-  "product_delivery_explanation": "Brief explanation based on the criteria.",
+  "team_transparency": "VERIFIED|PARTIAL|PSEUDONYMOUS|ANONYMOUS|FAKE",
+  "team_transparency_explanation": "1-2 sentences with findings",
+  "technical_security": "AUDITED|PARTIALLY_AUDITED|UNAUDITED|FAILED_AUDIT|BACKDOOR_DETECTED",
+  "technical_security_explanation": "1-2 sentences with findings", 
+  "legal_regulatory": "COMPLIANT|UNCLEAR|UNREGISTERED|CEASE_AND_DESIST|CRIMINAL_CHARGES",
+  "legal_regulatory_explanation": "1-2 sentences with findings",
+  "financial_transparency": "TRANSPARENT|PARTIAL|CONCERNING|PONZI_STRUCTURE|RUG_PULL_RISK", 
+  "financial_transparency_explanation": "1-2 sentences with findings",
+  "community_marketing": "ORGANIC|SHILLED|FAKE_FOLLOWERS|PUMP_SCHEME|CULT_LIKE",
+  "community_marketing_explanation": "1-2 sentences with findings",
+  "product_delivery": "DELIVERED|DELAYED|VAPORWARE|PLAGIARIZED|IMPOSSIBLE",
+  "product_delivery_explanation": "1-2 sentences with findings",
   "exchange_listings": ["string"],
-  "scam_type_indicators": ["string (e.g., Ponzi Structure, Rug Pull Risk, Plagiarized Whitepaper)"],
-  "community_warnings": ["string (Direct quotes or summaries of warnings found during search)"],
-  "red_flags": ["string (e.g., Anonymous team, No security audit, High whale concentration)"],
-  "positive_signals": ["string (e.g., Doxxed team with strong background, Top-tier VC funding, CertiK audit)"],
-  "risk_summary": "A concise, 1-2 sentence summary of the primary risks associated with this project.",
-  "sources_used": [{"name":"string (e.g., Etherscan Contract Page, CoinGecko, Project's Official Blog)","url":"string|null"}]
+  "scam_type_indicators": ["string"],
+  "community_warnings": ["string"], 
+  "red_flags": ["string"],
+  "positive_signals": ["string"],
+  "risk_summary": "1-2 sentence summary of primary risks",
+  "sources_used": [{"name":"string","url":"string|null"}]
 }`;
 
   let response;

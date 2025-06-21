@@ -10,7 +10,7 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     // Check for saved theme preference or default to system preference
-    const savedTheme = localStorage.getItem('aiCryptoCheck_theme');
+    const savedTheme = localStorage.getItem('cryptoSafeCheck_theme');
     if (savedTheme) {
       setTheme(savedTheme);
     } else {
@@ -25,7 +25,7 @@ export function ThemeProvider({ children }) {
     // Apply theme to document
     if (isLoaded) {
       document.documentElement.classList.toggle('dark', theme === 'dark');
-      localStorage.setItem('aiCryptoCheck_theme', theme);
+      localStorage.setItem('cryptoSafeCheck_theme', theme);
     }
   }, [theme, isLoaded]);
 

@@ -1,5 +1,5 @@
 {
-  "name": "crypto-scam-detector",
+  "name": "cryptosafecheck",
   "version": "0.1.0",
   "private": true,
   "scripts": {

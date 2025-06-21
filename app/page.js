@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import CryptoScannerResults from './components/CryptoScannerResults';
 import ThemeToggle from './components/theme-toggle';
 
@@ -62,7 +63,7 @@ export default function Home() {
 
   // Load recent searches from localStorage on component mount
   useEffect(() => {
-    const saved = localStorage.getItem('aiCryptoCheck_recentSearches');
+    const saved = localStorage.getItem('cryptoSafeCheck_recentSearches');
     if (saved) {
       try {
         setRecentSearches(JSON.parse(saved));
@@ -83,7 +84,7 @@ export default function Home() {
       return itemUrl !== searchItemUrl;
     })].slice(0, 5);
     setRecentSearches(updated);
-    localStorage.setItem('aiCryptoCheck_recentSearches', JSON.stringify(updated));
+    localStorage.setItem('cryptoSafeCheck_recentSearches', JSON.stringify(updated));
   };
 
   // Refresh analysis (force new analysis by bypassing cache)
@@ -403,16 +404,26 @@ export default function Home() {
     <div className="min-h-screen bg-trust-50 dark:bg-trust-900">
       {/* Header */}
       <div className="flex items-center justify-between px-8 py-6">
-        <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <span className="text-lg font-semibold text-trust-900 dark:text-white">AI Crypto Check</span>
+        <div className="flex items-center space-x-3">
+          <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+            <div className="relative">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center shadow-sm">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                </svg>
+              </div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-trust-900"></div>
+            </div>
+            <span className="text-lg font-semibold text-trust-900 dark:text-white">CryptoSafeCheck</span>
+          </Link>
         </div>
         <div className="flex items-center space-x-6">
-          <span className="text-sm text-trust-500 dark:text-trust-400">Blog</span>
+          <Link href="/" className="text-sm text-trust-700 dark:text-trust-300 font-medium hover:text-trust-900 dark:hover:text-trust-100 transition-colors">
+            Home
+          </Link>
+          <Link href="/blog" className="text-sm text-trust-500 dark:text-trust-400 hover:text-trust-700 dark:hover:text-trust-300 transition-colors">
+            Blog
+          </Link>
           <ThemeToggle />
           {isClient && window.location.hostname === 'localhost' && (
             <div className="flex gap-2">
@@ -440,7 +451,6 @@ export default function Home() {
               </button>
             </div>
           )}
-          <span className="text-sm text-trust-500 dark:text-trust-400">Powered by AI</span>
         </div>
       </div>
 
@@ -620,7 +630,7 @@ export default function Home() {
                     type="button"
                     onClick={() => {
                       setRecentSearches([]);
-                      localStorage.removeItem('aiCryptoCheck_recentSearches');
+                      localStorage.removeItem('cryptoSafeCheck_recentSearches');
                     }}
                     className="px-3 py-1 text-trust-500 dark:text-trust-400 text-sm hover:text-trust-700 dark:hover:text-trust-300 transition-colors duration-200"
                     title="Clear recent searches"

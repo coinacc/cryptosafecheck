@@ -5,9 +5,9 @@ import { ThemeProvider } from './lib/theme-context'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'AI Crypto Check - Crypto Scam Detector',
-  description: 'Analyze cryptocurrency projects for potential scam indicators using AI. Check tokens, DeFi protocols, and crypto investments for safety.',
-  keywords: 'cryptocurrency, scam detection, blockchain, security, AI analysis, crypto check, token analysis',
+  title: 'CryptoSafeCheck - AI-Powered Crypto Scam Detection',
+  description: 'Analyze cryptocurrency projects for potential scam indicators using AI. Check tokens, DeFi protocols, and crypto investments for safety with CryptoSafeCheck.',
+  keywords: 'cryptocurrency, scam detection, blockchain, security, AI analysis, crypto safety, token analysis, cryptosafecheck',
 }
 
 export default function RootLayout({ children }) {
@@ -19,7 +19,7 @@ export default function RootLayout({ children }) {
             __html: `
               (function() {
                 try {
-                  var savedTheme = localStorage.getItem('aiCryptoCheck_theme');
+                  var savedTheme = localStorage.getItem('cryptoSafeCheck_theme');
                   if (savedTheme) {
                     if (savedTheme === 'dark') {
                       document.documentElement.classList.add('dark');
@@ -50,7 +50,7 @@ export default function RootLayout({ children }) {
                     This tool is for educational purposes only. Always do your own research before making investment decisions.
                   </p>
                   <p>
-                    AI Crypto Check - Built with Next.js, Google Gemini, and Vercel
+                    CryptoSafeCheck - Built with Next.js, Google Gemini, and Vercel
                   </p>
                 </div>
               </div>
