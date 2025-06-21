@@ -1,8 +1,7 @@
 {
-  "/not-found": "app/not-found.js",
   "/api/analytics/route": "app/api/analytics/route.js",
   "/page": "app/page.js",
+  "/analytics/page": "app/analytics/page.js",
   "/api/analyze-full/route": "app/api/analyze-full/route.js",
-  "/api/dev/clear-all-cache/route": "app/api/dev/clear-all-cache/route.js",
-  "/analytics/page": "app/analytics/page.js"
+  "/blog/page": "app/blog/page.js"
 }
