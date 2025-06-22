@@ -25,10 +25,10 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
         >
           {children}
         </div>
-        {showTooltip && (
-          <div className="absolute z-10 w-64 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-lg -top-2 left-6 transform -translate-y-full">
-            <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-            {explanation}
+        {showTooltip && explanation && (
+          <div className="absolute z-10 w-64 p-3 bg-void-900/95 text-white text-sm rounded-lg shadow-xl border border-cyber-500/50 -top-2 left-6 transform -translate-y-full backdrop-blur-sm">
+            <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-void-900"></div>
+            {explanation || 'No explanation available'}
           </div>
         )}
       </div>
@@ -39,6 +39,22 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
   const getAIExplanation = (field) => {
     const explanationField = `${field}_explanation`;
     return result[explanationField] || null;
+  };
+
+  // Get explanation with fallback for trust indicators
+  const getExplanationWithFallback = (field, aiExplanation) => {
+    if (aiExplanation) return aiExplanation;
+    
+    const fallbacks = {
+      'team_transparency': 'Assessment of how publicly known and verifiable the project team is. Anonymous teams increase risk.',
+      'technical_security': 'Evaluation of smart contract audits, code quality, and technical security measures implemented.',
+      'legal_regulatory': 'Analysis of regulatory compliance, legal registrations, and adherence to financial regulations.',
+      'financial_transparency': 'Review of token economics, fund allocation, treasury transparency, and financial reporting.',
+      'community_marketing': 'Assessment of genuine community engagement vs artificial promotion and marketing tactics.',
+      'product_delivery': 'Evaluation of actual product delivery, development progress, and promised vs delivered features.'
+    };
+    
+    return fallbacks[field] || 'Analysis of this trust indicator based on available data and industry best practices.';
   };
 
   // Get explanation for safety levels
@@ -53,21 +69,21 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
   };
   const getSafetyColor = (level) => {
     switch(level) {
-      case 'VERY_SAFE': return 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-800';
-      case 'SAFE': return 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-800';
-      case 'RISKY': return 'text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-900/20 dark:border-amber-800';
-      case 'DANGEROUS': return 'text-red-700 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-900/20 dark:border-red-800';
-      default: return 'text-trust-600 bg-trust-50 border-trust-200 dark:text-trust-400 dark:bg-trust-800 dark:border-trust-700';
+      case 'VERY_SAFE': return 'border-2 border-neon-400 bg-neon-900/20 shadow-lg shadow-neon-500/20';
+      case 'SAFE': return 'border-2 border-emerald-400 bg-emerald-900/20 shadow-lg shadow-emerald-500/20';
+      case 'RISKY': return 'border-2 border-bitcoin-400 bg-bitcoin-900/20 shadow-lg shadow-bitcoin-500/30';
+      case 'DANGEROUS': return 'border-2 border-red-400 bg-red-900/20 shadow-lg shadow-red-500/40';
+      default: return 'border-2 border-cyber-400 bg-cyber-900/20 shadow-lg shadow-cyber-500/20';
     }
   };
 
   const getSafetyIcon = (level) => {
     switch(level) {
-      case 'VERY_SAFE': return <Shield className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />;
-      case 'SAFE': return <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />;
-      case 'RISKY': return <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />;
-      case 'DANGEROUS': return <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />;
-      default: return <Info className="w-6 h-6 text-trust-600 dark:text-trust-400" />;
+      case 'VERY_SAFE': return <Shield className="w-6 h-6 text-neon-400 glow-neon" />;
+      case 'SAFE': return <CheckCircle className="w-6 h-6 text-emerald-400 glow-neon" />;
+      case 'RISKY': return <AlertTriangle className="w-6 h-6 text-bitcoin-400 glow-bitcoin" />;
+      case 'DANGEROUS': return <XCircle className="w-6 h-6 text-red-400 glow-warning" />;
+      default: return <Info className="w-6 h-6 text-cyber-400 glow-cyber" />;
     }
   };
 
@@ -75,22 +91,22 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
     switch(status) {
       // Green - Good/Safe
       case 'VERIFIED': case 'AUDITED': case 'COMPLIANT': case 'TRANSPARENT': case 'ORGANIC': case 'DELIVERED': case 'OPEN_SOURCE':
-        return 'text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-900/30';
+        return 'text-neon-200 bg-neon-900/30 border border-neon-500/30';
 
       // Yellow - Caution/Partial
       case 'PARTIAL': case 'PARTIALLY_AUDITED': case 'UNCLEAR': case 'CONCERNING': case 'SHILLED': case 'DELAYED': case 'UNAUDITED': case 'ANONYMOUS': case 'PSEUDONYMOUS':
-        return 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30';
+        return 'text-bitcoin-200 bg-bitcoin-900/30 border border-bitcoin-500/30';
 
       // Red - Dangerous/Bad
       case 'FAKE': case 'FAILED_AUDIT': case 'BACKDOOR_DETECTED': case 'UNREGISTERED': case 'CEASE_AND_DESIST': case 'CRIMINAL_CHARGES': case 'SEC_ACTION': case 'PONZI_STRUCTURE': case 'RUG_PULL_RISK': case 'WASH_TRADING': case 'FAKE_FOLLOWERS': case 'PUMP_SCHEME': case 'CULT_LIKE': case 'VAPORWARE': case 'PLAGIARIZED': case 'IMPOSSIBLE': case 'MISSING':
-        return 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/30';
+        return 'text-red-200 bg-red-900/30 border border-red-500/30';
 
       // Gray - Neutral/Unknown
       case 'DEAD':
-        return 'text-gray-700 bg-gray-100 dark:text-gray-300 dark:bg-gray-700';
+        return 'text-void-200 bg-void-900/30 border border-void-500/30';
 
       default:
-        return 'text-trust-600 bg-trust-100 dark:text-trust-300 dark:bg-trust-700';
+        return 'text-cyber-200 bg-cyber-900/30 border border-cyber-500/30';
     }
   };
 
@@ -146,14 +162,14 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
           {displayItems.map((item, index) => (
             <li key={index} className="flex items-start">
               <div className={`w-2 h-2 ${dotColor} rounded-full mt-2 mr-3 flex-shrink-0`}></div>
-              <span className="text-gray-700 dark:text-gray-300">{formatText(item)}</span>
+              <span className="text-cyber-200">{formatText(item)}</span>
             </li>
           ))}
         </ul>
         {hasMore && (
           <button
             onClick={() => setExpanded(!isExpanded)}
-            className="mt-3 flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+            className="mt-3 flex items-center text-sm text-cyber-400 hover:text-cyber-200 transition-colors hover:glow-cyber"
           >
             {isExpanded ? (
               <>
@@ -175,13 +191,13 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-slide-up">
       {/* Header Card */}
-      <div className={`rounded-md border p-8 ${getSafetyColor(safetyLevel)}`}>
+      <div className={`glass-strong rounded-lg p-8 hover-glow ${getSafetyColor(safetyLevel)}`}>
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-start space-x-4">
             {getSafetyIcon(safetyLevel)}
             <div>
-              <h1 className="text-xl font-semibold mb-2">{projectName}</h1>
-              <div className="flex flex-wrap items-center gap-2 text-sm opacity-75">
+              <h1 className="text-xl font-bold mb-2 text-gradient-cyber">{projectName}</h1>
+              <div className="flex flex-wrap items-center gap-2 text-sm text-cyber-200 opacity-75">
                 <span>{projectType}</span>
                 {blockchainNetwork && (
                   <>
@@ -199,19 +215,19 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
             </div>
           </div>
           <div className="text-right">
-            <div className="text-lg font-medium">{formatText(safetyLevel)}</div>
-            <div className="text-sm opacity-75">Confidence: {confidence}</div>
+            <div className="text-lg font-bold text-gradient-neon">{formatText(safetyLevel)}</div>
+            <div className="text-sm text-cyber-200 opacity-75">Confidence: {confidence}</div>
           </div>
         </div>
-        <p className="text-base leading-relaxed mb-4">{riskSummary}</p>
+        <p className="text-base leading-relaxed mb-4 text-cyber-100">{riskSummary}</p>
 
         {/* Safety Level Explanation */}
-        <div className="mt-4 p-3 bg-white/50 dark:bg-black/20 rounded-md">
+        <div className="mt-4 p-3 glass rounded-md">
           <div className="flex items-start space-x-2">
             <HelpTooltip explanation={getSafetyLevelExplanation(safetyLevel)}>
               <HelpCircle className="w-4 h-4 mt-0.5 text-current opacity-60 hover:opacity-100 transition-opacity" />
             </HelpTooltip>
-            <p className="text-sm opacity-80">
+            <p className="text-sm text-cyber-100 opacity-80">
               {getSafetyLevelExplanation(safetyLevel)}
             </p>
           </div>
@@ -221,23 +237,21 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
 
 
       {/* Trust Indicators */}
-      <div className="bg-white dark:bg-trust-800 rounded-md border border-trust-200 dark:border-trust-700 p-6">
-        <h2 className="text-lg font-semibold mb-6 flex items-center text-trust-900 dark:text-white">
-          <Shield className="w-5 h-5 mr-3 text-trust-600 dark:text-trust-400" />
+      <div className="glass-strong rounded-lg neon-border-cyber p-6 hover-glow">
+        <h2 className="text-lg font-bold mb-6 flex items-center text-gradient-cyber">
+          <Shield className="w-5 h-5 mr-3 text-cyber-400 glow-cyber" />
           Trust Indicators
-          <HelpTooltip explanation="These 6 categories assess different aspects of project legitimacy. Hover over individual indicators for AI explanations specific to this project.">
-            <HelpCircle className="w-4 h-4 ml-2 text-trust-500 hover:text-trust-700 transition-colors" />
+          <HelpTooltip explanation="These 6 categories evaluate different aspects of crypto project safety: Team Transparency (identity verification), Technical Security (audits & code quality), Legal & Regulatory (compliance status), Financial Transparency (tokenomics & funding), Community & Marketing (genuine vs artificial growth), and Product Delivery (actual vs promised features).">
+            <HelpCircle className="w-4 h-4 ml-2 text-cyber-300 hover:text-cyber-100 transition-colors" />
           </HelpTooltip>
         </h2>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <span className="text-trust-600 dark:text-trust-400">Team Transparency:</span>
-              {teamTransparencyExplanation && (
-                <HelpTooltip explanation={teamTransparencyExplanation}>
-                  <HelpCircle className="w-3 h-3 ml-1 text-trust-400 hover:text-trust-600 transition-colors" />
-                </HelpTooltip>
-              )}
+              <span className="text-cyber-300">Team Transparency:</span>
+              <HelpTooltip explanation={getExplanationWithFallback('team_transparency', teamTransparencyExplanation)}>
+                <HelpCircle className="w-3 h-3 ml-1 text-cyber-400 hover:text-cyber-200 transition-colors" />
+              </HelpTooltip>
             </div>
             <span className={`px-3 py-1 rounded-md text-sm font-medium ${getStatusColor(teamTransparency)}`}>
               {formatText(teamTransparency)}
@@ -245,12 +259,10 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
           </div>
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <span className="text-trust-600 dark:text-trust-400">Technical Security:</span>
-              {technicalSecurityExplanation && (
-                <HelpTooltip explanation={technicalSecurityExplanation}>
-                  <HelpCircle className="w-3 h-3 ml-1 text-trust-400 hover:text-trust-600 transition-colors" />
-                </HelpTooltip>
-              )}
+              <span className="text-cyber-300">Technical Security:</span>
+              <HelpTooltip explanation={getExplanationWithFallback('technical_security', technicalSecurityExplanation)}>
+                <HelpCircle className="w-3 h-3 ml-1 text-cyber-400 hover:text-cyber-200 transition-colors" />
+              </HelpTooltip>
             </div>
             <span className={`px-3 py-1 rounded-md text-sm font-medium ${getStatusColor(technicalSecurity)}`}>
               {formatText(technicalSecurity)}
@@ -258,12 +270,10 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
           </div>
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <span className="text-trust-600 dark:text-trust-400">Legal & Regulatory:</span>
-              {legalRegulatoryExplanation && (
-                <HelpTooltip explanation={legalRegulatoryExplanation}>
-                  <HelpCircle className="w-3 h-3 ml-1 text-trust-400 hover:text-trust-600 transition-colors" />
-                </HelpTooltip>
-              )}
+              <span className="text-cyber-300">Legal & Regulatory:</span>
+              <HelpTooltip explanation={getExplanationWithFallback('legal_regulatory', legalRegulatoryExplanation)}>
+                <HelpCircle className="w-3 h-3 ml-1 text-cyber-400 hover:text-cyber-200 transition-colors" />
+              </HelpTooltip>
             </div>
             <span className={`px-3 py-1 rounded-md text-sm font-medium ${getStatusColor(legalRegulatory)}`}>
               {formatText(legalRegulatory)}
@@ -271,12 +281,10 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
           </div>
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <span className="text-trust-600 dark:text-trust-400">Financial Transparency:</span>
-              {financialTransparencyExplanation && (
-                <HelpTooltip explanation={financialTransparencyExplanation}>
-                  <HelpCircle className="w-3 h-3 ml-1 text-trust-400 hover:text-trust-600 transition-colors" />
-                </HelpTooltip>
-              )}
+              <span className="text-cyber-300">Financial Transparency:</span>
+              <HelpTooltip explanation={getExplanationWithFallback('financial_transparency', financialTransparencyExplanation)}>
+                <HelpCircle className="w-3 h-3 ml-1 text-cyber-400 hover:text-cyber-200 transition-colors" />
+              </HelpTooltip>
             </div>
             <span className={`px-3 py-1 rounded-md text-sm font-medium ${getStatusColor(financialTransparency)}`}>
               {formatText(financialTransparency)}
@@ -284,12 +292,10 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
           </div>
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <span className="text-trust-600 dark:text-trust-400">Community & Marketing:</span>
-              {communityMarketingExplanation && (
-                <HelpTooltip explanation={communityMarketingExplanation}>
-                  <HelpCircle className="w-3 h-3 ml-1 text-trust-400 hover:text-trust-600 transition-colors" />
-                </HelpTooltip>
-              )}
+              <span className="text-cyber-300">Community & Marketing:</span>
+              <HelpTooltip explanation={getExplanationWithFallback('community_marketing', communityMarketingExplanation)}>
+                <HelpCircle className="w-3 h-3 ml-1 text-cyber-400 hover:text-cyber-200 transition-colors" />
+              </HelpTooltip>
             </div>
             <span className={`px-3 py-1 rounded-md text-sm font-medium ${getStatusColor(communityMarketing)}`}>
               {formatText(communityMarketing)}
@@ -297,12 +303,10 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
           </div>
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <span className="text-trust-600 dark:text-trust-400">Product Delivery:</span>
-              {productDeliveryExplanation && (
-                <HelpTooltip explanation={productDeliveryExplanation}>
-                  <HelpCircle className="w-3 h-3 ml-1 text-trust-400 hover:text-trust-600 transition-colors" />
-                </HelpTooltip>
-              )}
+              <span className="text-cyber-300">Product Delivery:</span>
+              <HelpTooltip explanation={getExplanationWithFallback('product_delivery', productDeliveryExplanation)}>
+                <HelpCircle className="w-3 h-3 ml-1 text-cyber-400 hover:text-cyber-200 transition-colors" />
+              </HelpTooltip>
             </div>
             <span className={`px-3 py-1 rounded-md text-sm font-medium ${getStatusColor(productDelivery)}`}>
               {formatText(productDelivery)}
@@ -314,14 +318,14 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
 
       {/* Potential Scam Types - Moved up for priority */}
       {scamTypeIndicators.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4 flex items-center text-red-700">
-            <AlertTriangle className="w-5 h-5 mr-2" />
+        <div className="glass-strong border border-warning-500/30 rounded-lg p-6 hover-glow">
+          <h2 className="text-xl font-bold mb-4 flex items-center text-gradient-bitcoin">
+            <AlertTriangle className="w-5 h-5 mr-2 text-warning-400 glow-bitcoin" />
             Potential Scam Types Detected
           </h2>
           <div className="flex flex-wrap gap-2">
             {scamTypeIndicators.map((indicator, index) => (
-              <span key={index} className="px-3 py-1 bg-red-200 text-red-800 rounded-full text-sm">
+              <span key={index} className="px-3 py-1 glass border border-warning-500/30 text-warning-300 rounded-full text-sm">
                 {formatText(indicator)}
               </span>
             ))}
@@ -332,9 +336,9 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
       <div className="grid md:grid-cols-2 gap-6">
         {/* Red Flags */}
         {redFlags.length > 0 && (
-          <div className="bg-white dark:bg-trust-800 rounded-lg border border-trust-200 dark:border-trust-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center text-red-600 dark:text-red-400">
-              <XCircle className="w-5 h-5 mr-2" />
+          <div className="glass-strong rounded-lg neon-border-bitcoin p-6 hover-glow">
+            <h2 className="text-xl font-bold mb-4 flex items-center text-gradient-bitcoin">
+              <XCircle className="w-5 h-5 mr-2 text-warning-400 glow-bitcoin" />
               Red Flags ({redFlags.length})
             </h2>
             {renderExpandableList(redFlags, redFlagsExpanded, setRedFlagsExpanded, 3, 'bg-red-500')}
@@ -343,12 +347,12 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
 
         {/* Positive Signals */}
         {positiveSignals.length > 0 && (
-          <div className="bg-white dark:bg-trust-800 rounded-lg border border-trust-200 dark:border-trust-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center text-green-600 dark:text-green-400">
-              <CheckCircle className="w-5 h-5 mr-2" />
+          <div className="glass-strong rounded-lg neon-border-neon p-6 hover-glow">
+            <h2 className="text-xl font-bold mb-4 flex items-center text-gradient-neon">
+              <CheckCircle className="w-5 h-5 mr-2 text-neon-400 glow-neon" />
               Positive Signals ({positiveSignals.length})
             </h2>
-            {renderExpandableList(positiveSignals, positiveSignalsExpanded, setPositiveSignalsExpanded, 3, 'bg-green-500')}
+            {renderExpandableList(positiveSignals, positiveSignalsExpanded, setPositiveSignalsExpanded, 3, 'bg-neon-500')}
           </div>
         )}
       </div>
@@ -357,9 +361,9 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
 
       {/* Community Warnings */}
       {communityWarnings.length > 0 && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4 flex items-center text-yellow-700 dark:text-yellow-400">
-            <Users className="w-5 h-5 mr-2" />
+        <div className="glass-strong border border-bitcoin-500/30 rounded-lg p-6 hover-glow">
+          <h2 className="text-xl font-bold mb-4 flex items-center text-gradient-bitcoin">
+            <Users className="w-5 h-5 mr-2 text-bitcoin-400 glow-bitcoin" />
             Community Warnings
           </h2>
           <ul className="space-y-2">
@@ -369,8 +373,8 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
 
               return (
                 <li key={index} className="flex items-start">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700 dark:text-gray-300">{formatText(warningText)}</span>
+                  <div className="w-2 h-2 bg-bitcoin-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-cyber-200">{formatText(warningText)}</span>
                 </li>
               );
             })}
@@ -381,18 +385,18 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
       <div className="grid md:grid-cols-2 gap-6">
         {/* Verification Steps */}
         {keyVerificationSteps.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center text-blue-700">
-              <FileText className="w-5 h-5 mr-2" />
+          <div className="glass-strong rounded-lg neon-border-cyber p-6 hover-glow">
+            <h2 className="text-xl font-bold mb-4 flex items-center text-gradient-cyber">
+              <FileText className="w-5 h-5 mr-2 text-cyber-400 glow-cyber" />
               Verification Steps
             </h2>
             <ul className="space-y-2">
               {keyVerificationSteps.map((step, index) => (
                 <li key={index} className="flex items-start">
-                  <div className="w-6 h-6 bg-blue-200 text-blue-800 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5 flex-shrink-0">
+                  <div className="w-6 h-6 bg-cyber-500/30 text-cyber-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5 flex-shrink-0 border border-cyber-400/30">
                     {index + 1}
                   </div>
-                  <span className="text-gray-700">{formatText(step)}</span>
+                  <span className="text-cyber-200">{formatText(step)}</span>
                 </li>
               ))}
             </ul>
@@ -401,15 +405,15 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
 
         {/* Safe Alternatives */}
         {safeAlternatives.length > 0 && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center text-green-700">
-              <CheckCircle className="w-5 h-5 mr-2" />
+          <div className="glass-strong rounded-lg neon-border-neon p-6 hover-glow">
+            <h2 className="text-xl font-bold mb-4 flex items-center text-gradient-neon">
+              <CheckCircle className="w-5 h-5 mr-2 text-neon-400 glow-neon" />
               Research Areas
             </h2>
             <div className="space-y-2">
               {safeAlternatives.map((alternative, index) => (
-                <div key={index} className="p-2 bg-white rounded border">
-                  <span className="font-medium">{formatText(alternative)}</span>
+                <div key={index} className="p-3 glass rounded-md border border-neon-500/30">
+                  <span className="font-medium text-neon-200">{formatText(alternative)}</span>
                 </div>
               ))}
             </div>
@@ -419,14 +423,14 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
 
       {/* Exchange Listings - Moved to bottom as supplementary info */}
       {exchangeListings.length > 0 && (
-        <div className="bg-white dark:bg-trust-800 rounded-lg border border-trust-200 dark:border-trust-700 p-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center text-trust-900 dark:text-white">
-            <TrendingUp className="w-5 h-5 mr-2 text-trust-600 dark:text-trust-400" />
+        <div className="glass-strong rounded-lg neon-border p-6 hover-glow">
+          <h2 className="text-lg font-bold mb-4 flex items-center text-gradient-cyber">
+            <TrendingUp className="w-5 h-5 mr-2 text-cyber-400 glow-cyber" />
             Exchange Listings
           </h2>
           <div className="flex flex-wrap gap-2">
             {exchangeListings.map((exchange, index) => (
-              <span key={index} className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm">
+              <span key={index} className="px-3 py-1 glass text-cyber-200 rounded-full text-sm border border-cyber-500/30">
                 {formatText(exchange)}
               </span>
             ))}
@@ -435,15 +439,15 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
       )}
 
       {/* Sources & Research */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
-          <Search className="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" />
+      <div className="glass-strong rounded-lg neon-border-cyber p-6 hover-glow">
+        <h2 className="text-lg font-bold mb-4 flex items-center text-gradient-cyber">
+          <Search className="w-5 h-5 mr-2 text-cyber-400 glow-cyber" />
           Sources & Research
-          <HelpTooltip explanation="These are the data sources our AI analyzed to generate this assessment. More sources generally mean more comprehensive analysis.">
-            <HelpCircle className="w-4 h-4 ml-2 text-gray-500 hover:text-gray-700 transition-colors" />
+          <HelpTooltip explanation="Our AI analyzes multiple data sources to provide comprehensive risk assessment: official project websites, social media accounts, blockchain explorers, community discussions, regulatory databases, security audit reports, and financial data. More diverse sources lead to more accurate and reliable scam detection results.">
+            <HelpCircle className="w-4 h-4 ml-2 text-cyber-300 hover:text-cyber-100 transition-colors" />
           </HelpTooltip>
         </h2>
-        <div className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+        <div className="text-sm text-cyber-300 mb-3">
           Our AI analyzed the following sources to provide this comprehensive assessment:
         </div>
         {sourcesUsed.length > 0 ? (
@@ -460,14 +464,14 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
                     href={sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md text-sm border border-gray-200 dark:border-gray-600 transition-colors cursor-pointer"
+                    className="px-3 py-1 glass text-neon-400 hover:text-neon-300 hover:glow-neon rounded-md text-sm neon-border transition-all duration-300 cursor-pointer"
                   >
                     {formatText(sourceName)}
                   </a>
                 );
               } else {
                 return (
-                  <span key={index} className="px-3 py-1 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md text-sm border border-gray-200 dark:border-gray-600">
+                  <span key={index} className="px-3 py-1 glass text-cyber-200 rounded-md text-sm border border-cyber-500/30">
                     {formatText(sourceName)}
                   </span>
                 );
@@ -475,36 +479,36 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
             })}
           </div>
         ) : (
-          <div className="text-sm text-gray-500 dark:text-gray-400 italic">
+          <div className="text-sm text-cyber-400 italic">
             Sources information not available for this analysis.
           </div>
         )}
       </div>
 
       {/* Clean Footer */}
-      <div className="bg-trust-50 dark:bg-trust-800 rounded-lg p-6 text-center">
+      <div className="glass-strong rounded-lg neon-border p-6 text-center hover-glow">
         {/* Status Info */}
-        <div className="flex items-center justify-center text-sm text-trust-600 dark:text-trust-400 mb-6 flex-wrap gap-x-4 gap-y-2">
+        <div className="flex items-center justify-center text-sm text-cyber-300 mb-6 flex-wrap gap-x-4 gap-y-2">
           <div className="flex items-center space-x-1">
-            <CheckCircle className="w-4 h-4 text-green-500" />
+            <CheckCircle className="w-4 h-4 text-neon-400" />
             <span>Analysis completed</span>
           </div>
-          <div className="w-px h-4 bg-trust-300 dark:bg-trust-600 hidden sm:block"></div>
+          <div className="w-px h-4 bg-cyber-500/30 hidden sm:block"></div>
           <div className="flex items-center space-x-1">
-            <Info className="w-4 h-4 text-blue-500" />
+            <Info className="w-4 h-4 text-cyber-400" />
             <span>Confidence: {confidence}%</span>
           </div>
-          <div className="w-px h-4 bg-trust-300 dark:bg-trust-600 hidden sm:block"></div>
+          <div className="w-px h-4 bg-cyber-500/30 hidden sm:block"></div>
           <div className="flex items-center space-x-1">
-            <AlertTriangle className="w-4 h-4 text-amber-500" />
+            <AlertTriangle className="w-4 h-4 text-bitcoin-400" />
             <span>For informational purposes only</span>
           </div>
         </div>
 
         {/* Rate Limit Info */}
         {rateLimit && (
-          <div className="flex items-center justify-center text-xs text-trust-500 dark:text-trust-400 mb-6">
-            <Clock className="w-3.5 h-3.5 mr-1.5" />
+          <div className="flex items-center justify-center text-xs text-cyber-400 mb-6">
+            <Clock className="w-3.5 h-3.5 mr-1.5 text-cyber-400" />
             <span>Full analyses remaining: <span className="font-medium">{rateLimit.remaining}</span></span>
             <span className="mx-2">•</span>
             <span>Resets in {Math.ceil((rateLimit.resetTime - Date.now()) / (60 * 60 * 1000))} hours</span>
@@ -515,7 +519,7 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
         <button
           onClick={onAnalyzeAgain}
           disabled={isAnalyzing}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium disabled:bg-trust-400 disabled:cursor-not-allowed transition-colors duration-200"
+          className="glass neon-border-cyber text-cyber-100 px-6 py-3 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:glow-cyber hover-glow"
         >
           Analyze Another Project
         </button>

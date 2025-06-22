@@ -32,32 +32,183 @@ body {
 }
 
 .risk-high {
-  @apply bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300;
+  @apply bg-warning-900 text-warning-300;
 }
 
 .risk-medium {
-  @apply bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300;
+  @apply bg-warning-900 text-warning-300;
 }
 
 .risk-low {
-  @apply bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300;
+  @apply bg-success-900 text-success-300;
 }
 
 /* Secondary button styles */
 .btn-secondary {
-  @apply bg-trust-100 text-trust-700 hover:bg-trust-200 dark:bg-trust-700 dark:text-trust-300 dark:hover:bg-trust-600 px-4 py-2 rounded-md font-medium transition-all duration-200 shadow-sm hover:shadow-md;
+  @apply bg-trust-700 text-trust-300 hover:bg-trust-600 px-4 py-2 rounded-md font-medium transition-all duration-200 shadow-sm hover:shadow-md;
 }
 
 /* Tertiary button styles */
 .btn-tertiary {
-  @apply bg-transparent text-trust-600 hover:text-trust-800 dark:text-trust-400 dark:hover:text-trust-200 border border-trust-300 dark:border-trust-600 hover:border-trust-400 dark:hover:border-trust-500 px-4 py-2 rounded-md font-medium transition-all duration-200;
+  @apply bg-transparent text-trust-400 hover:text-trust-200 border border-trust-600 hover:border-trust-500 px-4 py-2 rounded-md font-medium transition-all duration-200;
 }
 
 /* Improved shadows for dark mode */
 .shadow-soft {
-  @apply shadow-sm dark:shadow-trust-900/10;
+  @apply shadow-trust-900/10;
 }
 
 .shadow-medium {
-  @apply shadow-md dark:shadow-trust-900/20;
+  @apply shadow-trust-900/20;
+}
+
+/* Glassmorphism effects */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Neon glow effects */
+.neon-border {
+  border: 1px solid #10b981;
+  box-shadow: 0 0 5px #10b981, inset 0 0 5px #10b981;
+}
+
+.neon-border-cyber {
+  border: 1px solid #8b5cf6;
+  box-shadow: 0 0 5px #8b5cf6, inset 0 0 5px #8b5cf6;
+}
+
+.neon-border-bitcoin {
+  border: 1px solid #f59e0b;
+  box-shadow: 0 0 5px #f59e0b, inset 0 0 5px #f59e0b;
+}
+
+.glow-neon {
+  box-shadow: 0 0 10px #10b981, 0 0 20px #10b981, 0 0 30px #10b981;
+}
+
+.glow-cyber {
+  box-shadow: 0 0 10px #8b5cf6, 0 0 20px #8b5cf6, 0 0 30px #8b5cf6;
+}
+
+.glow-bitcoin {
+  box-shadow: 0 0 10px #f59e0b, 0 0 20px #f59e0b, 0 0 30px #f59e0b;
+}
+
+/* Gradient text effects */
+.text-gradient-cyber {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-neon {
+  background: linear-gradient(135deg, #10b981, #34d399, #6ee7b7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-bitcoin {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24, #fcd34d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Cyber grid background */
+.cyber-grid {
+  background-image: 
+    linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Matrix effect background */
+.matrix-bg {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.matrix-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Hover effects */
+.hover-glow {
+  transition: all 0.3s ease;
+}
+
+.hover-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.2);
+}
+
+.hover-neon:hover {
+  box-shadow: 0 0 20px #10b981, 0 0 30px #10b981;
+  border-color: #34d399;
+}
+
+/* Crypto pulse effect */
+.crypto-pulse {
+  position: relative;
+}
+
+.crypto-pulse::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  border: 2px solid #8b5cf6;
+  animation: pulse 2s infinite;
+  opacity: 0.5;
+}
+
+/* Scan line effect */
+.scan-line {
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.3), transparent);
+  animation: cyberScan 3s ease-in-out infinite;
 }

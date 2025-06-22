@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import CryptoScannerResults from './components/CryptoScannerResults';
-import ThemeToggle from './components/theme-toggle';
 
 export default function Home() {
   const [url, setUrl] = useState('');
@@ -16,10 +15,11 @@ export default function Home() {
   const [analysisStartTime, setAnalysisStartTime] = useState(null);
   const [progressPercentage, setProgressPercentage] = useState(0);
   const [estimatedTime, setEstimatedTime] = useState(null);
-  const [scanType, setScanType] = useState('full'); // Only full analysis now
+  const [scanType, setScanType] = useState('full');
   const [isResettingLimit, setIsResettingLimit] = useState(false);
   const [progressInterval, setProgressInterval] = useState(null);
   const [isClient, setIsClient] = useState(false);
+  const [liveStats, setLiveStats] = useState(null);
 
   // Ref to track current request for cancellation
   const currentRequestRef = useRef(null);
@@ -29,12 +29,31 @@ export default function Home() {
     setIsClient(true);
   }, []);
 
+  // Fetch live stats
+  useEffect(() => {
+    const fetchLiveStats = async () => {
+      try {
+        const response = await fetch('/api/public-stats');
+        if (response.ok) {
+          const stats = await response.json();
+          setLiveStats(stats);
+        }
+      } catch (error) {
+        console.error('Failed to fetch live stats:', error);
+      }
+    };
+
+    fetchLiveStats();
+    // Refresh stats every 30 seconds
+    const interval = setInterval(fetchLiveStats, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Smooth progress animation for comprehensive analysis
   useEffect(() => {
     let interval = null;
 
     if (isAnalyzing && analysisStartTime) {
-      // Use 60 seconds for comprehensive analysis
       const maxDuration = 60000; // 60s for comprehensive analysis
       const startTime = analysisStartTime;
 
@@ -46,7 +65,6 @@ export default function Home() {
 
       setProgressInterval(interval);
     } else {
-      // Clear interval when not analyzing
       if (progressInterval) {
         clearInterval(progressInterval);
         setProgressInterval(null);
@@ -58,7 +76,7 @@ export default function Home() {
         clearInterval(interval);
       }
     };
-  }, [isAnalyzing, analysisStartTime]); // Removed scanType dependency
+  }, [isAnalyzing, analysisStartTime]);
 
   // Load recent searches from localStorage on component mount
   useEffect(() => {
@@ -72,8 +90,6 @@ export default function Home() {
     }
   }, []);
 
-
-
   // Save to recent searches with safety assessment
   const saveToRecentSearches = (searchUrl, safetyLevel = null) => {
     const searchItem = typeof searchUrl === 'string' ? { url: searchUrl, safetyLevel } : searchUrl;
@@ -86,63 +102,42 @@ export default function Home() {
     localStorage.setItem('cryptoSafeCheck_recentSearches', JSON.stringify(updated));
   };
 
-  // Refresh analysis (force new analysis by bypassing cache)
-  const handleRefreshAnalysis = async () => {
-    if (!result || !result._input) return;
-
-    try {
-      // Re-run the analysis with cache bypass
-      setIsAnalyzing(true);
-      setError(null);
-      setAnalysisProgress('Refreshing analysis...');
-
-      const data = await performAnalysis(result._input, 1, true); // bypassCache = true
-      setResult(data);
-    } catch (err) {
-      setError('Failed to refresh analysis. Please try again.');
-      console.error(err);
-    } finally {
-      setIsAnalyzing(false);
-      setAnalysisProgress('');
-    }
-  };
-
-  // Simplified analysis function - only comprehensive analysis
-  const performAnalysis = useCallback(async (processedUrl, attempt = 1, bypassCache = false) => {
+  // Analysis function
+  const performAnalysis = async (processedUrl, attempt = 1, bypassCache = false) => {
     const maxRetries = 3;
-    const requestId = Date.now();
+    const requestId = Date.now() + Math.random();
     currentRequestRef.current = requestId;
 
-    // Reset progress
-    setProgressPercentage(0);
+    const updateProgress = (message) => {
+      if (currentRequestRef.current === requestId) {
+        setAnalysisProgress(message);
+      }
+    };
 
     try {
-      // Progressive loading messages (progress percentage handled by useEffect)
-      const updateProgress = (message) => {
-        setAnalysisProgress(message);
-      };
+      if (attempt > maxRetries) {
+        throw new Error('Maximum retry attempts reached. Please try again later.');
+      }
 
-      // Comprehensive analysis with detailed progress
       updateProgress(attempt > 1 ? `Retrying analysis (${attempt}/${maxRetries})...` : 'Starting comprehensive analysis...');
       await new Promise(resolve => setTimeout(resolve, 300));
       if (currentRequestRef.current !== requestId) throw new Error('Request cancelled');
 
-      updateProgress('Identifying project type...');
-      await new Promise(resolve => setTimeout(resolve, 200));
+      updateProgress('Analyzing project data and blockchain information...');
+      await new Promise(resolve => setTimeout(resolve, 800));
       if (currentRequestRef.current !== requestId) throw new Error('Request cancelled');
 
-      updateProgress('Searching for project information...');
-      await new Promise(resolve => setTimeout(resolve, 300));
+      updateProgress('Checking security indicators and community sentiment...');
+      await new Promise(resolve => setTimeout(resolve, 600));
       if (currentRequestRef.current !== requestId) throw new Error('Request cancelled');
 
-      updateProgress('Analyzing with AI...');
+      updateProgress('Running comprehensive scam detection algorithms...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (currentRequestRef.current !== requestId) throw new Error('Request cancelled');
 
-      // Start the actual AI analysis via API route
       const response = await fetch('/api/analyze-full', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           url: processedUrl,
           sessionId: requestId
@@ -150,152 +145,193 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Analysis failed');
+        const errorData = await response.json().catch(() => ({}));
+        
+        if (response.status === 429) {
+          throw new Error(errorData.error || 'Rate limit exceeded. Please wait before trying again.');
+        }
+        
+        if (response.status >= 500 && attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          return performAnalysis(processedUrl, attempt + 1, bypassCache);
+        }
+        
+        throw new Error(errorData.error || `Analysis failed with status ${response.status}`);
       }
 
       const data = await response.json();
-
       if (currentRequestRef.current !== requestId) throw new Error('Request cancelled');
 
-      // Show completion
-      updateProgress('Analysis complete!');
-      setProgressPercentage(100); // Set to 100% on completion
-      setRetryCount(0);
-
-      // Brief delay to show completion
-      await new Promise(resolve => setTimeout(resolve, 500));
-
+      data._input = processedUrl;
       return data;
 
     } catch (error) {
-      if (error.message === 'Request cancelled') {
+      if (currentRequestRef.current !== requestId) {
+        throw new Error('Request cancelled');
+      }
+      
+      if (error.message.includes('rate limit') || error.message.includes('429')) {
         throw error;
       }
-
-      if (attempt < maxRetries) {
+      
+      if (attempt < maxRetries && !error.message.includes('cancelled')) {
+        console.log(`Attempt ${attempt} failed, retrying...`, error.message);
         setRetryCount(attempt);
-        const delay = Math.pow(2, attempt - 1) * 1000; // Exponential backoff: 1s, 2s, 4s
-        setAnalysisProgress(`Retrying in ${delay/1000}s...`);
-
-        await new Promise(resolve => setTimeout(resolve, delay));
-        if (currentRequestRef.current !== requestId) throw new Error('Request cancelled');
-
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
         return performAnalysis(processedUrl, attempt + 1, bypassCache);
       }
-
+      
       throw error;
     }
-  }, []);
+  };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!url.trim() || isAnalyzing) return;
 
-    // Handle both project names and URLs
-    let processedInput = url.trim();
-
-    // Only auto-prepend https:// if it looks like a domain (contains a dot and no spaces)
-    if (processedInput &&
-        !processedInput.startsWith('http://') &&
-        !processedInput.startsWith('https://') &&
-        processedInput.includes('.') &&
-        !processedInput.includes(' ')) {
-      processedInput = 'https://' + processedInput;
-    }
-
-    // Start comprehensive analysis
-    try {
-      setIsAnalyzing(true);
-      setError(null);
-      setResult(null);
-
-      // Cancel any existing request
-      if (currentRequestRef.current) {
-        currentRequestRef.current = null;
-      }
-
-      setAnalysisProgress('');
-      setRetryCount(0);
-      setProgressPercentage(0);
-      setEstimatedTime(null);
-
-      // Set start time for progress animation
-      setAnalysisStartTime(Date.now());
-
-      const data = await performAnalysis(processedInput, 1, false);
-      console.log('Analysis completed, setting result:', data);
-
-      // Force immediate state update to avoid React 18 batching delays
-      setResult(data);
-      setIsAnalyzing(false);
-      setAnalysisProgress('');
-
-      saveToRecentSearches(processedInput, data.safety_level);
-    } catch (err) {
-      if (err.message !== 'Request cancelled') {
-        // Show the actual error message from the API, or fallback to generic message
-        const errorMessage = err.message || `Failed to analyze URL after ${retryCount + 1} attempt${retryCount > 0 ? 's' : ''}. Please try again.`;
-        setError(errorMessage);
-        console.error(err);
-      }
-    } finally {
-      // Only update state if there was an error (successful case already handled above)
-      setIsAnalyzing(false);
-      setAnalysisProgress('');
-    }
-  };
-
-  const handleClear = () => {
-    setUrl('');
+    const processedUrl = url.trim();
+    
+    setIsAnalyzing(true);
     setResult(null);
     setError(null);
-    setAnalysisProgress('');
-    setProgressPercentage(0);
-    setEstimatedTime(null);
-    setAnalysisStartTime(null);
-    // Focus the input after clearing
-    document.querySelector('input[type="text"]')?.focus();
-  };
-
-  const handleAnalyzeAnother = () => {
-    // Clear all state
-    setUrl('');
-    setResult(null);
-    setError(null);
-    setAnalysisProgress('');
     setRetryCount(0);
     setProgressPercentage(0);
-    setEstimatedTime(null);
-    setAnalysisStartTime(null);
+    setAnalysisStartTime(Date.now());
+    setAnalysisProgress('Preparing analysis...');
 
-    // Scroll to top smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Focus the input field after a brief delay to ensure scroll completes
-    setTimeout(() => {
-      const input = document.querySelector('input[type="text"]');
-      if (input) {
-        input.focus();
-      }
-    }, 300);
-  };
-
-  const handleCancel = () => {
-    if (currentRequestRef.current) {
-      currentRequestRef.current = null;
+    try {
+      const data = await performAnalysis(processedUrl);
+      setResult(data);
+      setProgressPercentage(100);
+      setAnalysisProgress('Analysis complete!');
+      
+      const safetyLevel = data.risk_assessment?.overall_risk_level || data.overall_risk || null;
+      saveToRecentSearches(processedUrl, safetyLevel);
+      
+    } catch (err) {
+      console.error('Analysis error:', err);
+      setError(err.message || 'An unexpected error occurred during analysis.');
+    } finally {
       setIsAnalyzing(false);
       setAnalysisProgress('');
-      setProgressPercentage(0);
       setAnalysisStartTime(null);
       if (progressInterval) {
         clearInterval(progressInterval);
         setProgressInterval(null);
       }
-      setError('Analysis cancelled by user.');
     }
   };
 
+  // Clear input
+  const handleClear = () => {
+    setUrl('');
+  };
 
+  // Cancel analysis
+  const handleCancel = () => {
+    currentRequestRef.current = null;
+    setIsAnalyzing(false);
+    setAnalysisProgress('');
+    setAnalysisStartTime(null);
+    setProgressPercentage(0);
+    if (progressInterval) {
+      clearInterval(progressInterval);
+      setProgressInterval(null);
+    }
+  };
+
+  // Analyze another
+  const handleAnalyzeAnother = () => {
+    setResult(null);
+    setError(null);
+    setUrl('');
+    setRetryCount(0);
+    setProgressPercentage(0);
+  };
+
+  // Quick analysis for popular projects and recent searches
+  const handleQuickAnalysis = async (projectUrl) => {
+    if (isAnalyzing) return;
+    
+    const processedUrl = projectUrl.trim();
+    setUrl(processedUrl);
+    
+    setIsAnalyzing(true);
+    setResult(null);
+    setError(null);
+    setRetryCount(0);
+    setProgressPercentage(0);
+    setAnalysisStartTime(Date.now());
+    setAnalysisProgress('Preparing analysis...');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    try {
+      const data = await performAnalysis(processedUrl);
+      setResult(data);
+      setProgressPercentage(100);
+      setAnalysisProgress('Analysis complete!');
+      
+      const safetyLevel = data.risk_assessment?.overall_risk_level || data.overall_risk || null;
+      saveToRecentSearches(processedUrl, safetyLevel);
+      
+    } catch (err) {
+      console.error('Quick analysis error:', err);
+      setError(err.message || 'An unexpected error occurred during analysis.');
+    } finally {
+      setIsAnalyzing(false);
+      setAnalysisProgress('');
+      setAnalysisStartTime(null);
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        setProgressInterval(null);
+      }
+    }
+  };
+
+  // Go home handler - resets all state and returns to homepage
+  const handleGoHome = () => {
+    setResult(null);
+    setError(null);
+    setUrl('');
+    setRetryCount(0);
+    setProgressPercentage(0);
+    setAnalysisProgress('');
+    setAnalysisStartTime(null);
+    setIsAnalyzing(false);
+    if (progressInterval) {
+      clearInterval(progressInterval);
+      setProgressInterval(null);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Refresh analysis
+  const handleRefreshAnalysis = async () => {
+    if (!result || !result._input) return;
+
+    try {
+      setIsAnalyzing(true);
+      setError(null);
+      setAnalysisProgress('Refreshing analysis...');
+
+      const data = await performAnalysis(result._input, 1, true);
+      setResult(data);
+      
+      const safetyLevel = data.risk_assessment?.overall_risk_level || data.overall_risk || null;
+      saveToRecentSearches(result._input, safetyLevel);
+      
+    } catch (err) {
+      console.error('Refresh error:', err);
+      setError(err.message || 'Failed to refresh analysis');
+    } finally {
+      setIsAnalyzing(false);
+      setAnalysisProgress('');
+    }
+  };
 
   // Dev-only function to reset rate limit
   const handleResetRateLimit = async () => {
@@ -310,7 +346,6 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json();
         console.log('Rate limit reset:', data);
-        // Clear any existing error that might be about rate limits
         if (error && (error.includes('rate limit') || error.includes('maximum'))) {
           setError(null);
         }
@@ -324,202 +359,304 @@ export default function Home() {
     }
   };
 
-
   return (
-    <div className="min-h-screen bg-trust-50 dark:bg-trust-900">
+    <div className="min-h-screen bg-gradient-to-br from-void-950 via-void-900 to-void-800 matrix-bg">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 xs:px-6 md:px-8 py-4 md:py-6">
-        <div className="flex items-center space-x-2 xs:space-x-3">
-          <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-            <div className="relative">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-sm">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                </svg>
-              </div>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-trust-900"></div>
-            </div>
-            <span className="text-base xs:text-lg font-semibold text-trust-900 dark:text-white">CryptoSafeCheck</span>
-          </Link>
-        </div>
-        <div className="flex items-center space-x-3 xs:space-x-4 md:space-x-6">
-          <Link href="/" className="text-sm text-trust-700 dark:text-trust-300 font-medium hover:text-trust-900 dark:hover:text-trust-100 transition-colors">
-            Home
-          </Link>
-          <Link href="/blog" className="text-sm text-trust-500 dark:text-trust-400 hover:text-trust-700 dark:hover:text-trust-300 transition-colors">
-            Blog
-          </Link>
-          <ThemeToggle />
-          {isClient && window.location.hostname === 'localhost' && (
-            <div className="flex gap-2">
-              <button
-                onClick={handleResetRateLimit}
-                disabled={isResettingLimit}
-                className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50 transition-colors"
-                title="Reset rate limit for your IP (Dev only)"
-              >
-                {isResettingLimit ? 'Resetting...' : 'Reset Limit'}
+      <div className="relative">
+        <div className="glass-dark rounded-b-2xl border-0 border-b border-neon-500/20">
+          <div className="flex items-center justify-between px-4 xs:px-6 md:px-8 py-4 md:py-6">
+            <div className="flex items-center space-x-2 xs:space-x-3">
+              <button onClick={handleGoHome} className="flex items-center space-x-3 hover-glow transition-all duration-300 group">
+                <div className="relative">
+                  <div className="w-10 h-10 bg-gradient-to-br from-cyber-500 via-cyber-600 to-cyber-700 rounded-xl flex items-center justify-center glow-cyber animate-float">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                    </svg>
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-neon-500 rounded-full border-2 border-void-900 animate-neon-pulse"></div>
+                </div>
+                <span className="text-base xs:text-xl font-bold text-gradient-cyber group-hover:scale-105 transition-transform">
+                  CryptoSafeCheck
+                </span>
               </button>
             </div>
-          )}
+            <div className="flex items-center space-x-3 xs:space-x-4 md:space-x-6">
+              {(result || isAnalyzing) && (
+                <button 
+                  onClick={handleGoHome}
+                  className="text-sm text-cyber-300 hover:text-cyber-100 transition-all duration-300 hover:glow-cyber px-3 py-1 rounded-md"
+                >
+                  Home
+                </button>
+              )}
+              <Link href="/blog" className="text-sm text-cyber-300 hover:text-cyber-100 transition-all duration-300 hover:glow-cyber px-3 py-1 rounded-md">
+                Blog
+              </Link>
+              {isClient && window.location.hostname === 'localhost' && (
+                <div className="hidden lg:block">
+                  <button
+                    type="button"
+                    onClick={handleResetRateLimit}
+                    disabled={isResettingLimit}
+                    className="px-3 py-1 text-xs bg-warning-900/50 text-warning-300 rounded-md hover:bg-warning-800/50 disabled:opacity-50 transition-all duration-300 border border-warning-600/30 hover:border-warning-500/50"
+                    title="Reset rate limit for your IP (Dev only)"
+                  >
+                    {isResettingLimit ? 'Resetting...' : 'Reset Limit'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Main Content Card - Hide when analyzing or results are shown */}
+      {/* Hero Section */}
       {!isAnalyzing && !result && (
-        <div className="max-w-4xl mx-auto px-4 xs:px-6 md:px-8 py-8 md:py-12">
-          <div className="bg-white dark:bg-trust-800 rounded-lg shadow-sm border border-trust-200 dark:border-trust-700 p-6 xs:p-8 md:p-12">
-            <div className="text-center mb-8">
-              <h1 className="text-2xl xs:text-3xl font-semibold text-trust-900 dark:text-white mb-4">Analyze Crypto Projects</h1>
-              <p className="text-trust-600 dark:text-trust-400 text-base xs:text-lg">Enter a project name, symbol, website, or contract address to check for potential scam indicators</p>
+        <div className="relative">
+          {/* Floating crypto elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-20 left-10 w-8 h-8 text-cyber-500/20 animate-float">
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zm5.568 8.16l-.29 1.416c-.124.622-.24 1.117-.35 1.48-.11.364-.234.667-.372.908-.138.242-.289.422-.454.54-.165.118-.352.177-.562.177-.21 0-.414-.07-.61-.207-.197-.138-.385-.33-.564-.576a1.919 1.919 0 01-.394-.81c-.094-.317-.141-.671-.141-1.062 0-.275.02-.521.058-.738.039-.217.093-.401.162-.553.069-.152.15-.27.243-.354.093-.084.194-.126.303-.126.109 0 .211.042.306.126.095.084.176.202.245.354.069.152.123.336.162.553.038.217.058.463.058.738z"/>
+              </svg>
             </div>
-      
-          <form onSubmit={handleSubmit} className="mb-8">
-            <div className="max-w-2xl mx-auto space-y-4">
-              {/* Input field */}
-              <div className="relative">
-                <input
-                  type="text"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="SafeMoon, bitcoin.org, or contract address"
-                  required
-                  autoFocus
-                  className="w-full p-4 pr-12 border border-trust-300 dark:border-trust-600 bg-white dark:bg-trust-700 text-trust-900 dark:text-white rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-all duration-200 text-base shadow-sm hover:border-trust-400 dark:hover:border-trust-500"
-                />
-                {url && (
-                  <button
-                    type="button"
-                    onClick={handleClear}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-trust-400 hover:text-trust-600 transition-colors"
-                    aria-label="Clear input"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
+            <div className="absolute top-32 right-16 w-6 h-6 text-neon-500/20 animate-float" style={{animationDelay: '1s'}}>
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z"/>
+              </svg>
+            </div>
+            <div className="absolute bottom-32 left-20 w-5 h-5 text-bitcoin-500/20 animate-float" style={{animationDelay: '2s'}}>
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zM9.5 8.5h1.75V7h1.5v1.5h.5c1.379 0 2.5 1.121 2.5 2.5 0 .859-.437 1.617-1.101 2.063.664.446 1.101 1.204 1.101 2.063 0 1.379-1.121 2.5-2.5 2.5h-.5V19h-1.5v-1.374H9.5v-1.5h.5v-5.252h-.5V8.5zm3.25 2.126c.345 0 .625-.28.625-.626s-.28-.625-.625-.625h-1v1.251h1zm.375 3.748c.414 0 .75-.336.75-.75s-.336-.75-.75-.75h-1.375v1.5h1.375z"/>
+              </svg>
+            </div>
+          </div>
+
+          {/* Hero Header */}
+          <div className="max-w-6xl mx-auto px-8 py-16 relative z-10">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl xs:text-5xl md:text-6xl font-bold mb-6">
+                <span className="text-gradient-cyber">Detect Crypto</span>
+                <br />
+                <span className="text-gradient-neon">Scams Instantly</span>
+              </h1>
+              <p className="text-lg xs:text-xl text-void-200 mb-8 max-w-3xl mx-auto leading-relaxed">
+                AI-powered analysis of crypto projects, tokens, and websites. Get comprehensive risk assessments in seconds using advanced machine learning and blockchain intelligence.
+              </p>
+
+              {/* Threat Level Indicator */}
+              <div className="inline-flex items-center gap-3 glass-strong px-6 py-3 rounded-full neon-border-cyber">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-neon-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium text-neon-400">THREAT LEVEL: MONITORING</span>
+                </div>
+                <div className="w-px h-4 bg-cyber-500/30"></div>
+                <span className="text-xs text-cyber-300">Real-time scam detection active</span>
               </div>
 
-              {/* Single Analysis Button */}
-              <div className="flex justify-center">
-                <button
-                  type="submit"
-                  disabled={isAnalyzing || !url.trim()}
-                  className="w-full max-w-md bg-primary-600 text-white px-8 py-4 rounded-md hover:bg-primary-700 disabled:bg-trust-400 disabled:cursor-not-allowed flex items-center justify-center font-medium transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Analyze Project
-                    </>
-                  )}
-                </button>
-              </div>
+              {/* Live Stats Display */}
+              {liveStats && (
+                <div className="mt-8 glass-strong rounded-xl p-6 neon-border">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="text-center">
+                      <div className="text-2xl md:text-3xl font-bold text-gradient-cyber mb-1">
+                        {liveStats.totalScans.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-cyber-300">Total Scans</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl md:text-3xl font-bold text-gradient-bitcoin mb-1">
+                        {liveStats.scamsDetected.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-cyber-300">Scams Detected</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl md:text-3xl font-bold text-gradient-neon mb-1">
+                        {liveStats.successRate}%
+                      </div>
+                      <div className="text-xs text-cyber-300">Success Rate</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl md:text-3xl font-bold text-gradient-cyber mb-1">
+                        {liveStats.todayScans}
+                      </div>
+                      <div className="text-xs text-cyber-300">Today's Scans</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center mt-4 text-xs text-void-400">
+                    <div className="w-2 h-2 bg-neon-500 rounded-full animate-pulse mr-2"></div>
+                    <span>Live • Updated {new Date(liveStats.lastUpdated).toLocaleTimeString()}</span>
+                  </div>
+                </div>
+              )}
+            </div>
 
-              {/* Analysis Features */}
-              <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-6 border border-primary-200 dark:border-primary-800">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-3 h-3 bg-primary-500 rounded-full"></div>
-                  <span className="font-semibold text-primary-700 dark:text-primary-300">Comprehensive Analysis</span>
-                  <span className="text-sm text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-800 px-2 py-1 rounded">Free</span>
+            {/* Main Analysis Card */}
+            <div className="max-w-4xl mx-auto">
+              <div className="glass-strong neon-border-cyber rounded-2xl p-8 hover-glow scan-line">
+                <form onSubmit={handleSubmit}>
+                  {/* Enhanced Input field */}
+                  <div className="relative mb-6">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        placeholder="Enter crypto project URL, contract address, or name..."
+                        disabled={isAnalyzing}
+                        autoFocus
+                        className="w-full p-5 pr-14 bg-void-900/50 border border-cyber-500/30 text-white rounded-xl focus:border-neon-500 focus:ring-2 focus:ring-neon-500/20 focus:outline-none transition-all duration-300 text-lg placeholder-void-400 hover:border-cyber-400/50"
+                      />
+                      {url && (
+                        <button
+                          type="button"
+                          onClick={handleClear}
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-void-400 hover:text-neon-400 transition-all duration-300 hover:scale-110"
+                          aria-label="Clear input"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Enhanced Analysis Button */}
+                  <div className="flex justify-center">
+                    <button
+                      type="submit"
+                      disabled={!url.trim() || isAnalyzing}
+                      className="group relative px-8 py-4 font-bold text-lg rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                    >
+                      {isAnalyzing ? (
+                        <span className="flex items-center gap-3 bg-gradient-to-r from-cyber-600 to-cyber-700 text-white px-8 py-4 rounded-xl neon-border-cyber glow-cyber">
+                          <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Analyzing...</span>
+                        </span>
+                      ) : (
+                        <span className="bg-gradient-to-r from-neon-500 to-cyber-500 text-void-900 px-8 py-4 rounded-xl neon-border group-hover:glow-neon group-hover:scale-105 transition-all duration-300 group-disabled:hover:scale-100">
+                          🛡️ Analyze for Scams
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </form>
+
+                {/* Security Features Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 pt-8 border-t border-cyber-700/30">
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-neon-500 to-neon-600 rounded-xl flex items-center justify-center mx-auto mb-3 glow-neon">
+                      <svg className="w-6 h-6 text-void-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                      </svg>
+                    </div>
+                    <h3 className="font-semibold text-white mb-2">Smart Contract Analysis</h3>
+                    <p className="text-sm text-void-300">Deep inspection of contract code and vulnerabilities</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-cyber-500 to-cyber-600 rounded-xl flex items-center justify-center mx-auto mb-3 glow-cyber">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <h3 className="font-semibold text-white mb-2">Real-time Intelligence</h3>
+                    <p className="text-sm text-void-300">Live data from multiple blockchain networks</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-bitcoin-500 to-bitcoin-600 rounded-xl flex items-center justify-center mx-auto mb-3 glow-bitcoin">
+                      <svg className="w-6 h-6 text-void-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    </div>
+                    <h3 className="font-semibold text-white mb-2">AI Risk Assessment</h3>
+                    <p className="text-sm text-void-300">Advanced machine learning threat detection</p>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <ul className="text-trust-600 dark:text-trust-400 space-y-2">
-                    <li className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span>Team transparency verification</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span>Technical security audits</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span>Legal & regulatory status</span>
-                    </li>
-                  </ul>
-                  <ul className="text-trust-600 dark:text-trust-400 space-y-2">
-                    <li className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span>Financial transparency</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span>Community & marketing analysis</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span>Product delivery assessment</span>
-                    </li>
-                  </ul>
-                </div>
-                <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-700">
-                  <p className="text-sm text-blue-600 dark:text-blue-400">
-                    <strong>Analysis time:</strong> Up to 1 minute • <strong>No limits</strong> • Powered by AI
-                  </p>
+
+                {/* Trust Indicators */}
+                <div className="flex flex-wrap justify-center gap-4 mt-8 pt-6 border-t border-cyber-700/30">
+                  <div className="flex items-center space-x-2 text-sm text-void-400">
+                    <div className="w-2 h-2 bg-neon-500 rounded-full animate-pulse"></div>
+                    <span>AI Powered</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-void-400">
+                    <div className="w-2 h-2 bg-cyber-500 rounded-full animate-pulse"></div>
+                    <span>Real-time Data</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-void-400">
+                    <div className="w-2 h-2 bg-bitcoin-500 rounded-full animate-pulse"></div>
+                    <span>100% Free</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </form>
 
-          {/* Examples and Recent Searches */}
-          <div className="max-w-2xl mx-auto">
-            <div className="text-center mb-6">
-              <span className="text-sm text-trust-600 dark:text-trust-400 mr-4">Try these examples:</span>
-              <div className="inline-flex flex-wrap gap-2 justify-center">
-                {['SafeMoon', 'DOGE', 'Uniswap', 'coinbase.com', 'hyperliquid.xyz'].map((example) => (
+            {/* Popular Projects & Examples */}
+            <div className="max-w-4xl mx-auto mt-16">
+              <div className="text-center mb-8">
+                <h3 className="text-xl font-bold text-gradient-cyber mb-3">Popular Analysis Targets</h3>
+                <p className="text-void-300">Click any project to start instant analysis</p>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {[
+                  { name: 'SafeMoon', risk: 'high', icon: '⚠️' },
+                  { name: 'DOGE', risk: 'medium', icon: '🐕' },
+                  { name: 'Uniswap', risk: 'low', icon: '🦄' },
+                  { name: 'coinbase.com', risk: 'low', icon: '🏦' },
+                  { name: 'hyperliquid.xyz', risk: 'medium', icon: '💧' }
+                ].map((example) => (
                   <button
-                    key={example}
+                    key={example.name}
                     type="button"
-                    onClick={() => setUrl(example)}
-                    className="px-3 py-1 bg-trust-100 dark:bg-trust-700 text-trust-600 dark:text-trust-300 rounded text-sm hover:bg-trust-200 dark:hover:bg-trust-600 transition-colors duration-200"
+                    onClick={() => handleQuickAnalysis(example.name)}
+                    disabled={isAnalyzing}
+                    className="glass border border-cyber-500/20 hover:border-neon-500/40 rounded-xl p-4 text-center hover-glow transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {example}
+                    <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">{example.icon}</div>
+                    <div className="text-sm font-medium text-white mb-1">{example.name}</div>
+                    <div className={`text-xs px-2 py-1 rounded-full ${
+                      example.risk === 'high' ? 'bg-warning-900/50 text-warning-400 border border-warning-600/30' :
+                      example.risk === 'medium' ? 'bg-bitcoin-900/50 text-bitcoin-400 border border-bitcoin-600/30' :
+                      'bg-neon-900/50 text-neon-400 border border-neon-600/30'
+                    }`}>
+                      {example.risk === 'high' ? 'HIGH RISK' : example.risk === 'medium' ? 'MEDIUM' : 'VERIFIED'}
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Recent Searches */}
             {recentSearches.length > 0 && (
-              <div className="text-center">
-                <span className="text-sm text-trust-600 dark:text-trust-400 mr-4">Recent searches:</span>
-                <div className="inline-flex flex-wrap gap-2 justify-center">
+              <div className="max-w-4xl mx-auto mt-12 text-center">
+                <h4 className="text-lg font-semibold text-cyber-400 mb-4">Recent Analysis History</h4>
+                <div className="flex flex-wrap gap-3 justify-center">
                   {recentSearches.map((recent, index) => {
-                    // Handle both old string format and new object format
                     const recentUrl = typeof recent === 'string' ? recent : recent.url;
                     const safetyLevel = typeof recent === 'string' ? null : recent.safetyLevel;
 
-                    // Get color based on safety level
                     const getSafetyColor = (level) => {
                       switch(level) {
-                        case 'VERY_SAFE': return 'bg-green-500';
-                        case 'SAFE': return 'bg-green-500';
-                        case 'RISKY': return 'bg-yellow-500';
-                        case 'DANGEROUS': return 'bg-red-500';
-                        default: return 'bg-gray-400'; // For old entries without safety level
+                        case 'VERY_SAFE': return 'border-neon-500/50 bg-neon-900/30 text-neon-400';
+                        case 'SAFE': return 'border-neon-500/50 bg-neon-900/30 text-neon-400';
+                        case 'RISKY': return 'border-bitcoin-500/50 bg-bitcoin-900/30 text-bitcoin-400';
+                        case 'DANGEROUS': return 'border-warning-500/50 bg-warning-900/30 text-warning-400';
+                        default: return 'border-void-500/50 bg-void-700/30 text-void-400';
+                      }
+                    };
+
+                    const getStatusIcon = (level) => {
+                      switch(level) {
+                        case 'VERY_SAFE': 
+                        case 'SAFE': return '✅';
+                        case 'RISKY': return '⚠️';
+                        case 'DANGEROUS': return '🚨';
+                        default: return '🔍';
                       }
                     };
 
@@ -527,13 +664,18 @@ export default function Home() {
                       <button
                         key={index}
                         type="button"
-                        onClick={() => setUrl(recentUrl)}
-                        className="flex items-center gap-2 px-3 py-1 bg-trust-100 dark:bg-trust-700 text-trust-600 dark:text-trust-300 rounded text-sm hover:bg-trust-200 dark:hover:bg-trust-600 transition-colors duration-200"
-                        title={recentUrl}
+                        onClick={() => handleQuickAnalysis(recentUrl)}
+                        disabled={isAnalyzing}
+                        className={`glass ${getSafetyColor(safetyLevel)} border rounded-xl px-4 py-2 hover-glow transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed`}
+                        title={`${recentUrl} - ${safetyLevel || 'Unknown status'}`}
                       >
-                        <div className={`w-2 h-2 rounded-full ${getSafetyColor(safetyLevel)}`}></div>
-                        {recentUrl.replace(/^https?:\/\//, '').substring(0, 15)}
-                        {recentUrl.replace(/^https?:\/\//, '').length > 15 ? '...' : ''}
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm group-hover:scale-110 transition-transform">{getStatusIcon(safetyLevel)}</span>
+                          <span className="text-sm font-medium">
+                            {recentUrl.replace(/^https?:\/\//, '').substring(0, 12)}
+                            {recentUrl.replace(/^https?:\/\//, '').length > 12 ? '...' : ''}
+                          </span>
+                        </div>
                       </button>
                     );
                   })}
@@ -543,65 +685,57 @@ export default function Home() {
                       setRecentSearches([]);
                       localStorage.removeItem('cryptoSafeCheck_recentSearches');
                     }}
-                    className="px-3 py-1 text-trust-500 dark:text-trust-400 text-sm hover:text-trust-700 dark:hover:text-trust-300 transition-colors duration-200"
+                    className="glass border border-void-500/30 bg-void-700/30 text-void-400 px-4 py-2 rounded-xl text-sm hover:border-warning-500/50 hover:text-warning-400 transition-all duration-300"
                     title="Clear recent searches"
                   >
-                    Clear
+                    🗑️ Clear History
                   </button>
                 </div>
               </div>
             )}
           </div>
         </div>
-      </div>
       )}
 
-      {/* Enhanced Progress Indicator */}
+      {/* Progress Indicator */}
       {isAnalyzing && analysisProgress && (
-        <div className="max-w-4xl mx-auto px-8 py-12 mb-8" data-progress-section>
-          <div className="bg-white dark:bg-trust-800 border border-trust-200 dark:border-trust-700 rounded-lg shadow-sm p-8">
+        <div className="max-w-4xl mx-auto px-8 py-12 mb-8">
+          <div className="glass-strong rounded-lg shadow-lg neon-border-cyber p-8">
             <div className="text-center">
-              {/* Main loading animation */}
               <div className="flex items-center justify-center mb-4">
-                <svg className="animate-spin -ml-1 mr-4 h-6 w-6 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin -ml-1 mr-4 h-6 w-6 text-cyber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 <div>
-                  <p className="text-trust-800 dark:text-trust-200 font-medium text-lg">{analysisProgress}</p>
-                  <p className="text-trust-500 dark:text-trust-400 text-sm mt-1">
-                    Estimated time: up to 1 minute
-                  </p>
+                  <p className="text-cyber-200 font-medium text-lg">{analysisProgress}</p>
+                  <p className="text-cyber-400 text-sm mt-1">Estimated time: up to 1 minute</p>
                   {retryCount > 0 && (
-                    <p className="text-trust-600 dark:text-trust-400 text-sm mt-1">Attempt {retryCount + 1} of 3</p>
+                    <p className="text-cyber-400 text-sm mt-1">Attempt {retryCount + 1} of 3</p>
                   )}
                 </div>
               </div>
 
-              {/* Progress bar */}
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-4">
+              <div className="w-full bg-void-800 rounded-full h-3 mb-4">
                 <div
-                  className="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
+                  className="bg-gradient-to-r from-cyber-500 to-neon-500 h-3 rounded-full transition-all duration-300 ease-out"
                   style={{ width: `${progressPercentage}%` }}
                 ></div>
               </div>
 
-              {/* Progress percentage */}
-              <div className="text-xs text-gray-500 mb-2">
+              <div className="text-xs text-cyber-300 mb-2">
                 Progress: {progressPercentage}%
               </div>
 
-              {/* Cancel button */}
               <button
                 onClick={handleCancel}
-                className="text-sm text-trust-500 dark:text-trust-400 hover:text-trust-700 dark:hover:text-trust-300 transition-colors duration-200"
+                className="text-sm text-cyber-400 hover:text-cyber-200 transition-colors duration-200"
               >
                 Cancel Analysis
               </button>
 
-              {/* Helpful tips while waiting */}
-              <div className="mt-6 p-4 bg-trust-50 dark:bg-trust-700 rounded-md">
-                <p className="text-sm text-trust-600 dark:text-trust-300">
+              <div className="mt-6 p-4 glass rounded-md">
+                <p className="text-sm text-cyber-200">
                   <strong>💡 Tip:</strong> Our AI analyzes multiple data sources including project websites, social media, blockchain data, and community feedback to provide comprehensive scam detection across 6 key trust indicators.
                 </p>
               </div>
@@ -610,10 +744,11 @@ export default function Home() {
         </div>
       )}
 
+      {/* Error Display */}
       {error && (
         <div className="max-w-4xl mx-auto px-8 mb-8">
-          <div className="bg-white dark:bg-trust-800 border border-red-200 dark:border-red-700 rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-center text-red-700 dark:text-red-400">
+          <div className="glass-strong border border-warning-500/30 rounded-lg shadow-sm p-6">
+            <div className="flex items-center justify-center text-warning-400">
               <svg className="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
@@ -623,73 +758,35 @@ export default function Home() {
         </div>
       )}
 
-
-
+      {/* Results */}
       {result && (
-        <div className="max-w-4xl mx-auto px-8 py-12" data-results-section>
+        <div className="max-w-4xl mx-auto px-8 py-12">
           {result.status === 'not_applicable' ? (
-            // Simple message for non-crypto projects
-            <div className="bg-white dark:bg-trust-800 rounded-lg shadow-sm border border-trust-200 dark:border-trust-700 p-8">
+            <div className="glass-strong rounded-lg shadow-sm border border-cyber-500/30 p-8">
               <div className="flex items-start gap-4 mb-6">
-                <div className="w-12 h-12 bg-blue-600 rounded-md flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-cyber-600 rounded-md flex items-center justify-center flex-shrink-0">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-trust-900 dark:text-white mb-2">Not a Crypto Project</h2>
-                  <p className="text-trust-600 dark:text-trust-300 leading-relaxed">
-                    {result.message || "This appears to be outside our crypto scam detection scope."}
+                  <h2 className="text-xl font-semibold text-cyber-100 mb-2">Not a Crypto Project</h2>
+                  <p className="text-cyber-200 mb-4">
+                    This appears to be a general website or service that doesn't involve cryptocurrency, tokens, or blockchain technology.
+                  </p>
+                  <p className="text-sm text-cyber-300">
+                    Our scam detection is specifically designed for crypto projects, DeFi platforms, and blockchain-related services.
                   </p>
                 </div>
               </div>
-
-              <div className="p-6 bg-trust-50 dark:bg-trust-700 rounded-md border border-trust-200 dark:border-trust-600 mb-6">
-                <p className="text-sm text-trust-600 dark:text-trust-300 leading-relaxed">
-                  <strong className="text-trust-700 dark:text-trust-200">About AI Crypto Check:</strong> This tool is designed specifically to identify fraudulent crypto investment projects,
-                  fake tokens, and Ponzi schemes. Legitimate services like exchanges, tax calculators, and portfolio trackers are outside our scope.
-                </p>
-              </div>
-
-              <div className="text-center">
-                <button
-                  onClick={handleAnalyzeAnother}
-                  disabled={isAnalyzing}
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
-                >
-                  Analyze Another Project
-                </button>
-              </div>
-            </div>
-          ) : result.category === 'UTILITY_TOOL' ? (
-            // Legacy utility tool message
-            <div className="bg-white dark:bg-trust-800 rounded-lg shadow-sm border border-trust-200 dark:border-trust-700 p-8">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-12 h-12 bg-blue-600 rounded-md flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-trust-900 dark:text-white mb-2">Not a Scam Detection Target</h2>
-                  <p className="text-trust-600 dark:text-trust-300 leading-relaxed">
-                    {result.summary}
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-center">
-                <button
-                  onClick={handleAnalyzeAnother}
-                  disabled={isAnalyzing}
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
-                >
-                  Analyze Another Project
-                </button>
-              </div>
+              <button
+                onClick={handleAnalyzeAnother}
+                className="glass neon-border-cyber text-cyber-100 px-6 py-2 rounded-md hover:glow-cyber transition-all duration-300"
+              >
+                Analyze Another Project
+              </button>
             </div>
           ) : (
-            // Full analysis results
             <CryptoScannerResults
               result={result}
               onAnalyzeAgain={handleAnalyzeAnother}

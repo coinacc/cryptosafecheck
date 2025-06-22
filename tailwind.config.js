@@ -12,6 +12,7 @@ module.exports = {
         'risk-high': '#ef4444',
         'risk-medium': '#f59e0b',
         'risk-low': '#10b981',
+        // Legacy trust colors (keeping for compatibility)
         'trust': {
           50: '#f8fafc',
           100: '#f1f5f9',
@@ -24,19 +25,44 @@ module.exports = {
           800: '#1e293b',
           900: '#0f172a',
         },
-        'primary': {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+        // Crypto-themed color palette
+        'cyber': {
+          50: '#f3f1ff',
+          100: '#ebe5ff',
+          200: '#d9ceff',
+          300: '#bea6ff',
+          400: '#9f75ff',
+          500: '#8b5cf6',
+          600: '#7c3aed',
+          700: '#6d28d9',
+          800: '#5b21b6',
+          900: '#4c1d95',
         },
-        'success': {
+        'neon': {
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981',
+          600: '#059669',
+          700: '#047857',
+          800: '#065f46',
+          900: '#064e3b',
+        },
+        'bitcoin': {
+          50: '#fffbeb',
+          100: '#fef3c7',
+          200: '#fde68a',
+          300: '#fcd34d',
+          400: '#fbbf24',
+          500: '#f59e0b',
+          600: '#d97706',
+          700: '#b45309',
+          800: '#92400e',
+          900: '#78350f',
+        },
+        'matrix': {
           50: '#f0fdf4',
           100: '#dcfce7',
           200: '#bbf7d0',
@@ -47,6 +73,44 @@ module.exports = {
           700: '#15803d',
           800: '#166534',
           900: '#14532d',
+        },
+        'void': {
+          50: '#fafafa',
+          100: '#f4f4f5',
+          200: '#e4e4e7',
+          300: '#d4d4d8',
+          400: '#a1a1aa',
+          500: '#71717a',
+          600: '#52525b',
+          700: '#3f3f46',
+          800: '#27272a',
+          900: '#18181b',
+          950: '#09090b',
+        },
+        // Existing semantic colors updated
+        'primary': {
+          50: '#f3f1ff',
+          100: '#ebe5ff',
+          200: '#d9ceff',
+          300: '#bea6ff',
+          400: '#9f75ff',
+          500: '#8b5cf6',
+          600: '#7c3aed',
+          700: '#6d28d9',
+          800: '#5b21b6',
+          900: '#4c1d95',
+        },
+        'success': {
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981',
+          600: '#059669',
+          700: '#047857',
+          800: '#065f46',
+          900: '#064e3b',
         },
         'warning': {
           50: '#fffbeb',
@@ -77,6 +141,13 @@ module.exports = {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'glow': 'glow 2s ease-in-out infinite alternate',
+        'neon-pulse': 'neonPulse 1.5s ease-in-out infinite',
+        'cyber-scan': 'cyberScan 2s ease-in-out infinite',
+        'float': 'float 3s ease-in-out infinite',
+        'matrix-rain': 'matrixRain 20s linear infinite',
+        'crypto-bounce': 'cryptoBounce 1s ease-in-out infinite',
+        'typing': 'typing 3.5s steps(30, end), blink-caret 0.75s step-end infinite',
       },
       screens: {
         'xs': '475px',
@@ -89,6 +160,44 @@ module.exports = {
         slideUp: {
           '0%': { transform: 'translateY(10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        glow: {
+          '0%': { 
+            boxShadow: '0 0 5px rgb(139, 92, 246), 0 0 10px rgb(139, 92, 246), 0 0 15px rgb(139, 92, 246)'
+          },
+          '100%': { 
+            boxShadow: '0 0 10px rgb(139, 92, 246), 0 0 20px rgb(139, 92, 246), 0 0 30px rgb(139, 92, 246)'
+          },
+        },
+        neonPulse: {
+          '0%, 100%': { 
+            boxShadow: '0 0 5px rgb(16, 185, 129), 0 0 10px rgb(16, 185, 129)',
+            borderColor: 'rgb(16, 185, 129)'
+          },
+          '50%': { 
+            boxShadow: '0 0 20px rgb(16, 185, 129), 0 0 30px rgb(16, 185, 129)',
+            borderColor: 'rgb(52, 211, 153)'
+          },
+        },
+        cyberScan: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        matrixRain: {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(100vh)' },
+        },
+        cryptoBounce: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.05)' },
+        },
+        typing: {
+          '0%': { width: '0%' },
+          '100%': { width: '100%' },
         },
       },
     },

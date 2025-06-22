@@ -145,10 +145,10 @@ export default function AnalyticsPage() {
   // Show loading spinner while checking authentication
   if (checkingAuth) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen matrix-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Checking authentication...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyber-500 mx-auto glow-cyber"></div>
+          <p className="mt-4 text-cyber-200">Checking authentication...</p>
         </div>
       </div>
     );
@@ -156,11 +156,11 @@ export default function AnalyticsPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="max-w-md w-full space-y-8 p-8">
+      <div className="min-h-screen matrix-bg flex items-center justify-center">
+        <div className="max-w-md w-full space-y-8 p-8 glass-strong rounded-lg neon-border-cyber">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics Dashboard</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Enter password to access internal analytics</p>
+            <h2 className="text-3xl font-bold text-gradient-cyber">Analytics Dashboard</h2>
+            <p className="mt-2 text-cyber-200">Enter password to access internal analytics</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="relative">
@@ -169,13 +169,13 @@ export default function AnalyticsPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-4 py-3 glass neon-border rounded-lg focus:ring-2 focus:ring-cyber-500 focus:border-transparent text-cyber-100 placeholder-cyber-300 hover:glow-cyber transition-all duration-300"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="absolute right-3 top-3 text-cyber-300 hover:text-cyber-100 transition-colors duration-300"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -188,17 +188,17 @@ export default function AnalyticsPage() {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-cyber-200">
                 Remember me for 7 days
               </label>
             </div>
             {error && (
-              <div className="text-red-600 dark:text-red-400 text-sm text-center">{error}</div>
+              <div className="text-bitcoin-400 text-sm text-center glow-bitcoin">{error}</div>
             )}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              className="w-full glass neon-border-cyber text-cyber-100 font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:glow-cyber hover-glow"
             >
               {loading ? 'Authenticating...' : 'Access Analytics'}
             </button>
@@ -210,10 +210,10 @@ export default function AnalyticsPage() {
 
   if (!analytics || !realTimeStats) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen matrix-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading analytics...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyber-500 mx-auto glow-cyber"></div>
+          <p className="mt-4 text-cyber-200">Loading analytics...</p>
         </div>
       </div>
     );
@@ -229,16 +229,16 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="min-h-screen matrix-bg p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics Dashboard</h1>
-            <p className="text-gray-600 dark:text-gray-400">Internal usage and cost monitoring</p>
+            <h1 className="text-3xl font-bold text-gradient-cyber">Analytics Dashboard</h1>
+            <p className="text-cyber-200">Internal usage and cost monitoring</p>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-cyber-300 hover:text-cyber-100 transition-all duration-300 hover:glow-cyber rounded-md glass"
             title="Logout"
           >
             <LogOut className="w-5 h-5" />
@@ -248,48 +248,48 @@ export default function AnalyticsPage() {
 
         {/* Real-time Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
+          <div className="glass-strong rounded-lg p-6 shadow-lg neon-border hover-glow">
             <div className="flex items-center">
-              <Activity className="w-8 h-8 text-blue-600" />
+              <Activity className="w-8 h-8 text-cyber-400 glow-cyber" />
               <div className="ml-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Today's Requests</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-sm text-cyber-300">Today's Requests</p>
+                <p className="text-2xl font-bold text-gradient-cyber">
                   {formatNumber(realTimeStats?.today?.totalRequests)}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
+          <div className="glass-strong rounded-lg p-6 shadow-lg neon-border hover-glow">
             <div className="flex items-center">
-              <DollarSign className="w-8 h-8 text-green-600" />
+              <DollarSign className="w-8 h-8 text-neon-400 glow-neon" />
               <div className="ml-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Today's Cost</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-sm text-cyber-300">Today's Cost</p>
+                <p className="text-2xl font-bold text-gradient-neon">
                   {formatCurrency(realTimeStats?.today?.totalCost)}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
+          <div className="glass-strong rounded-lg p-6 shadow-lg neon-border hover-glow">
             <div className="flex items-center">
-              <Database className="w-8 h-8 text-purple-600" />
+              <Database className="w-8 h-8 text-bitcoin-400 glow-bitcoin" />
               <div className="ml-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Cache Hit Rate</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-sm text-cyber-300">Cache Hit Rate</p>
+                <p className="text-2xl font-bold text-gradient-bitcoin">
                   {realTimeStats?.cacheHitRate || '0'}%
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
+          <div className="glass-strong rounded-lg p-6 shadow-lg neon-border hover-glow">
             <div className="flex items-center">
-              <Clock className="w-8 h-8 text-orange-600" />
+              <Clock className="w-8 h-8 text-cyber-400 glow-cyber" />
               <div className="ml-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Avg Response Time</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-sm text-cyber-300">Avg Response Time</p>
+                <p className="text-2xl font-bold text-gradient-cyber">
                   {Math.round(realTimeStats?.today?.avgResponseTime || 0)}ms
                 </p>
               </div>
@@ -300,8 +300,8 @@ export default function AnalyticsPage() {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Daily Requests Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Daily Requests</h3>
+          <div className="glass-strong rounded-lg p-6 shadow-lg neon-border hover-glow">
+            <h3 className="text-lg font-bold text-gradient-cyber mb-4">Daily Requests</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={analytics?.dailyData || []}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -314,8 +314,8 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Daily Costs Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Daily Costs</h3>
+          <div className="glass-strong rounded-lg p-6 shadow-lg neon-border hover-glow">
+            <h3 className="text-lg font-bold text-gradient-neon mb-4">Daily Costs</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={analytics?.dailyData || []}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -329,36 +329,36 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Summary Stats */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">30-Day Summary</h3>
+        <div className="glass-strong rounded-lg p-6 shadow-lg mb-8 neon-border hover-glow">
+          <h3 className="text-lg font-bold text-gradient-cyber mb-4">30-Day Summary</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Requests</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm text-cyber-300">Total Requests</p>
+              <p className="text-xl font-bold text-gradient-cyber">
                 {formatNumber(analytics?.totals?.totalRequests)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Tokens</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm text-cyber-300">Total Tokens</p>
+              <p className="text-xl font-bold text-gradient-neon">
                 {formatNumber(analytics?.totals?.totalTokens)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Cost</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm text-cyber-300">Total Cost</p>
+              <p className="text-xl font-bold text-gradient-bitcoin">
                 {formatCurrency(analytics?.totals?.totalCost)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Cached Requests</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm text-cyber-300">Cached Requests</p>
+              <p className="text-xl font-bold text-gradient-cyber">
                 {formatNumber(analytics?.totals?.cachedRequests)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Errors</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm text-cyber-300">Errors</p>
+              <p className="text-xl font-bold text-gradient-bitcoin">
                 {formatNumber(analytics?.totals?.errors)}
               </p>
             </div>
@@ -366,53 +366,53 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Recent Requests */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Requests</h3>
+        <div className="glass-strong rounded-lg p-6 shadow-lg neon-border-cyber hover-glow">
+          <h3 className="text-lg font-bold text-gradient-cyber mb-4">Recent Requests</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-2">Time</th>
-                  <th className="text-left py-2">Project</th>
-                  <th className="text-left py-2">Tokens</th>
-                  <th className="text-left py-2">Cost</th>
-                  <th className="text-left py-2">Response Time</th>
-                  <th className="text-left py-2">Status</th>
+                <tr className="border-b border-cyber-700">
+                  <th className="text-left py-2 text-cyber-300">Time</th>
+                  <th className="text-left py-2 text-cyber-300">Project</th>
+                  <th className="text-left py-2 text-cyber-300">Tokens</th>
+                  <th className="text-left py-2 text-cyber-300">Cost</th>
+                  <th className="text-left py-2 text-cyber-300">Response Time</th>
+                  <th className="text-left py-2 text-cyber-300">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {(analytics?.recentRequests || []).slice(0, 20).map((request, index) => (
-                  <tr key={index} className="border-b border-gray-100 dark:border-gray-700">
-                    <td className="py-2 text-gray-600 dark:text-gray-400">
+                  <tr key={index} className="border-b border-cyber-800 hover:bg-cyber-900/20 transition-colors">
+                    <td className="py-2 text-cyber-200">
                       {new Date(request.timestamp).toLocaleTimeString()}
                     </td>
-                    <td className="py-2 text-gray-900 dark:text-white">
+                    <td className="py-2 text-cyber-100">
                       {request.project.length > 30 ? 
                         `${request.project.substring(0, 30)}...` : 
                         request.project
                       }
                     </td>
-                    <td className="py-2 text-gray-900 dark:text-white">
+                    <td className="py-2 text-cyber-100">
                       {formatNumber(request?.totalTokens)}
                     </td>
-                    <td className="py-2 text-gray-900 dark:text-white">
-                      <span className={request.cost === null ? 'text-gray-500 italic' : ''}>
+                    <td className="py-2 text-cyber-100">
+                      <span className={request.cost === null ? 'text-cyber-400 italic' : ''}>
                         {formatCurrency(request?.cost)}
                       </span>
                       {request.costSource === 'ai_provided' && (
-                        <span className="ml-1 text-xs text-green-600" title="Cost provided by AI">✓</span>
+                        <span className="ml-1 text-xs text-neon-400" title="Cost provided by AI">✓</span>
                       )}
                     </td>
-                    <td className="py-2 text-gray-900 dark:text-white">
+                    <td className="py-2 text-cyber-100">
                       {Math.round(request?.responseTime || 0)}ms
                     </td>
                     <td className="py-2">
                       {request.cached ? (
-                        <span className="text-blue-600 dark:text-blue-400">Cached</span>
+                        <span className="text-cyber-400 glow-cyber">Cached</span>
                       ) : request.success ? (
-                        <span className="text-green-600 dark:text-green-400">Success</span>
+                        <span className="text-neon-400 glow-neon">Success</span>
                       ) : (
-                        <span className="text-red-600 dark:text-red-400">Error</span>
+                        <span className="text-bitcoin-400 glow-bitcoin">Error</span>
                       )}
                     </td>
                   </tr>

@@ -46,7 +46,8 @@ export async function trackApiUsage(data, request = null) {
       error_message: data.error || null,
       user_agent: userAgent,
       client_ip: clientIP,
-      scan_type: data.scanType || 'full'
+      scan_type: data.scanType || 'full',
+      analysis_result: data.analysisResult || null // Store full analysis result for caching
     };
 
     // Insert into analytics_records table

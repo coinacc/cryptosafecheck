@@ -5,36 +5,17 @@ import { createContext, useContext, useEffect, useState } from 'react';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState('light');
+  const [theme] = useState('dark'); // Always dark mode
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Check for saved theme preference or default to system preference
-    const savedTheme = localStorage.getItem('cryptoSafeCheck_theme');
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else {
-      // Check system preference
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setTheme(systemPrefersDark ? 'dark' : 'light');
-    }
+    // Always apply dark theme
+    document.documentElement.classList.add('dark');
     setIsLoaded(true);
   }, []);
 
-  useEffect(() => {
-    // Apply theme to document
-    if (isLoaded) {
-      document.documentElement.classList.toggle('dark', theme === 'dark');
-      localStorage.setItem('cryptoSafeCheck_theme', theme);
-    }
-  }, [theme, isLoaded]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
-
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, isLoaded }}>
+    <ThemeContext.Provider value={{ theme, isLoaded }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -412,7 +412,8 @@ export const analyzeUrl = async (userInput, sessionId = null, request = null) =>
     cached: cached,
     success: apiSuccess,
     error: apiError,
-    scanType: 'full'
+    scanType: 'full',
+    analysisResult: apiSuccess ? result : null // Store analysis result for caching
   }, request);
 
   console.log(`✅ Analysis completed for: ${userInput}`);

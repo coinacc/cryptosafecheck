@@ -28,26 +28,24 @@ export async function getCachedAnalysis(input, scanType = 'full') {
     // Query Supabase for cached result
     const { data, error } = await supabaseAdmin
       .from('analytics_records')
-      .select('*')
+      .select('analysis_result')
       .eq('project', input)
       .eq('scan_type', scanType)
       .eq('success', true)
       .eq('cached', false) // Get original analysis, not cached hits
+      .not('analysis_result', 'is', null) // Only get records with analysis results
       .gte('timestamp', cutoffTime.toISOString())
       .order('timestamp', { ascending: false })
       .limit(1)
       .single();
 
-    if (error || !data) {
+    if (error || !data || !data.analysis_result) {
       console.log(`Cache MISS for: ${input} (${scanType})`);
       return null;
     }
 
-    // Check if we have the full analysis result stored
-    // For now, return null to force fresh analysis
-    // TODO: Store full analysis results in a separate table if needed
-    console.log(`Cache data found but returning MISS to ensure fresh analysis: ${input} (${scanType})`);
-    return null;
+    console.log(`🎯 Cache HIT for: ${input} (${scanType})`);
+    return data.analysis_result;
 
   } catch (error) {
     console.error('Cache read error:', error);
