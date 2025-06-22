@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Navigation from '../components/Navigation';
 
 export const metadata = {
   title: 'Datenschutzerklärung | CryptoSafeCheck',
@@ -16,32 +17,7 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-void-950 to-void-900">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 xs:px-6 md:px-8 py-4 md:py-6">
-        <div className="flex items-center space-x-2 xs:space-x-3">
-          <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-colors">
-            <div className="relative">
-              <div className="w-8 h-8 bg-cyber-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                </svg>
-              </div>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-neon-500 rounded-full border-2 border-void-950"></div>
-            </div>
-            <span className="text-base xs:text-lg font-semibold text-white">CryptoSafeCheck</span>
-          </Link>
-        </div>
-        <div className="flex items-center space-x-3 xs:space-x-4 md:space-x-6">
-          <Link href="/" className="text-sm text-cyber-300 hover:text-cyber-100 transition-colors px-3 py-1 rounded-md">
-            Home
-          </Link>
-          <Link href="/about" className="text-sm text-cyber-300 hover:text-cyber-100 transition-colors px-3 py-1 rounded-md">
-            About
-          </Link>
-          <Link href="/blog" className="text-sm text-cyber-300 hover:text-cyber-100 transition-colors px-3 py-1 rounded-md">
-            Blog
-          </Link>
-        </div>
-      </div>
+      <Navigation currentPage="privacy" />
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 xs:px-6 md:px-8 py-8 md:py-12">

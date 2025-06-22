@@ -85,7 +85,7 @@ export default function CookieConsent() {
 
   // Check if user has given consent (show floating button) - only on client
   const hasConsent = !showBanner && !showSettings;
-  const shouldShowFloatingButton = isClient && hasConsent && typeof window !== 'undefined' && localStorage.getItem('cryptosafecheck_cookie_consent');
+  const shouldShowFloatingButton = isClient && hasConsent && typeof window !== 'undefined' && typeof localStorage !== 'undefined' && localStorage.getItem('cryptosafecheck_cookie_consent');
 
   if (!showBanner && !showSettings && !shouldShowFloatingButton) {
     return null;
@@ -110,39 +110,39 @@ export default function CookieConsent() {
 
       {/* Cookie Banner */}
       {showBanner && !showSettings && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-void-900/95 backdrop-blur-sm border-t border-cyber-400/30 p-4 md:p-6">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-void-900/95 backdrop-blur-sm border-t border-cyber-400/30 p-3 sm:p-4 md:p-6">
           <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+            <div className="flex flex-col gap-4">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 bg-neon-600/20 rounded-lg flex items-center justify-center">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-neon-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
                     🍪
                   </div>
-                  <h3 className="text-lg font-semibold text-white">Cookie Settings</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-white">Cookie Settings</h3>
                 </div>
-                <p className="text-cyber-200 text-sm leading-relaxed">
+                <p className="text-cyber-200 text-xs sm:text-sm leading-relaxed">
                   We use cookies to improve your experience and optimize our website. 
                   Technically necessary cookies are required for basic functions. 
                   You can customize your preferences or accept all cookies.
                 </p>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-3 min-w-fit">
+              <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
                 <button
                   onClick={openSettings}
-                  className="px-4 py-2 text-sm border border-cyber-400/30 text-cyber-300 hover:text-white hover:border-cyber-300 rounded-lg transition-colors"
+                  className="flex-1 xs:flex-none px-3 sm:px-4 py-2 text-xs sm:text-sm border border-cyber-400/30 text-cyber-300 hover:text-white hover:border-cyber-300 rounded-lg transition-colors min-h-[44px]"
                 >
                   Settings
                 </button>
                 <button
                   onClick={acceptNecessaryOnly}
-                  className="px-4 py-2 text-sm bg-void-800 text-white hover:bg-void-700 rounded-lg transition-colors border border-void-600"
+                  className="flex-1 xs:flex-none px-3 sm:px-4 py-2 text-xs sm:text-sm bg-void-800 text-white hover:bg-void-700 rounded-lg transition-colors border border-void-600 min-h-[44px]"
                 >
                   Necessary Only
                 </button>
                 <button
                   onClick={acceptAll}
-                  className="px-6 py-2 text-sm bg-neon-600 text-white hover:bg-neon-500 rounded-lg transition-colors font-medium"
+                  className="flex-1 xs:flex-none px-4 sm:px-6 py-2 text-xs sm:text-sm bg-neon-600 text-white hover:bg-neon-500 rounded-lg transition-colors font-medium min-h-[44px]"
                 >
                   Accept All
                 </button>
@@ -154,9 +154,9 @@ export default function CookieConsent() {
 
       {/* Cookie Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 z-50 bg-void-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-void-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
           <div className="bg-void-900 border border-cyber-400/30 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">Cookie Settings</h2>
                 <button
@@ -229,22 +229,22 @@ export default function CookieConsent() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-6 border-t border-cyber-400/20">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-8 pt-6 border-t border-cyber-400/20">
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="px-4 py-2 text-sm border border-cyber-400/30 text-cyber-300 hover:text-white hover:border-cyber-300 rounded-lg transition-colors"
+                  className="px-4 py-2 text-xs sm:text-sm border border-cyber-400/30 text-cyber-300 hover:text-white hover:border-cyber-300 rounded-lg transition-colors min-h-[44px]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={acceptNecessaryOnly}
-                  className="px-4 py-2 text-sm bg-red-600/20 border border-red-500/30 text-red-300 hover:bg-red-600/30 hover:text-white rounded-lg transition-colors"
+                  className="px-4 py-2 text-xs sm:text-sm bg-red-600/20 border border-red-500/30 text-red-300 hover:bg-red-600/30 hover:text-white rounded-lg transition-colors min-h-[44px]"
                 >
                   Withdraw All
                 </button>
                 <button
                   onClick={handleCustomSave}
-                  className="px-6 py-2 text-sm bg-neon-600 text-white hover:bg-neon-500 rounded-lg transition-colors font-medium flex-1 sm:flex-none"
+                  className="px-4 sm:px-6 py-2 text-xs sm:text-sm bg-neon-600 text-white hover:bg-neon-500 rounded-lg transition-colors font-medium flex-1 sm:flex-none min-h-[44px]"
                 >
                   Save Settings
                 </button>
