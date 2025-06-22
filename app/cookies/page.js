@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import CookieButton from './CookieButton';
 
 export const metadata = {
   title: 'Cookie-Richtlinie | CryptoSafeCheck',
@@ -213,15 +214,7 @@ export default function CookiesPage() {
                   </p>
                   
                   <div className="bg-void-900/50 p-4 rounded-lg">
-                    <button 
-                      onClick={() => {
-                        // This would trigger the cookie consent modal in a real implementation
-                        alert('Cookie-Einstellungen würden hier geöffnet. In der finalen Version wird hier ein Cookie-Consent-Banner implementiert.');
-                      }}
-                      className="bg-neon-600/20 border border-neon-400/30 text-white px-6 py-3 rounded-lg hover:bg-neon-600/30 transition-colors"
-                    >
-                      🍪 Cookie-Einstellungen verwalten
-                    </button>
+                    <CookieButton />
                   </div>
                 </div>
 
