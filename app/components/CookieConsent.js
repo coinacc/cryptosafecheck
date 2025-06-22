@@ -81,7 +81,7 @@ export default function CookieConsent() {
 
   // Check if user has given consent (show floating button)
   const hasConsent = !showBanner && !showSettings;
-  const shouldShowFloatingButton = hasConsent && localStorage.getItem('cryptosafecheck_cookie_consent');
+  const shouldShowFloatingButton = hasConsent && typeof window !== 'undefined' && localStorage.getItem('cryptosafecheck_cookie_consent');
 
   if (!showBanner && !showSettings && !shouldShowFloatingButton) {
     return null;
@@ -94,8 +94,8 @@ export default function CookieConsent() {
         <button
           onClick={openSettings}
           className="fixed bottom-6 right-6 z-40 bg-void-800/90 backdrop-blur-sm border border-cyber-400/30 text-white p-3 rounded-full hover:bg-void-700/90 transition-all duration-300 hover:scale-110 shadow-lg"
-          title="Cookie-Einstellungen"
-          aria-label="Cookie-Einstellungen öffnen"
+          title="Cookie Settings"
+          aria-label="Open Cookie Settings"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -114,12 +114,12 @@ export default function CookieConsent() {
                   <div className="w-8 h-8 bg-neon-600/20 rounded-lg flex items-center justify-center">
                     🍪
                   </div>
-                  <h3 className="text-lg font-semibold text-white">Cookie-Einstellungen</h3>
+                  <h3 className="text-lg font-semibold text-white">Cookie Settings</h3>
                 </div>
                 <p className="text-cyber-200 text-sm leading-relaxed">
-                  Wir verwenden Cookies, um Ihre Erfahrung zu verbessern und unsere Website zu optimieren. 
-                  Technisch notwendige Cookies sind für die Grundfunktionen erforderlich. 
-                  Sie können Ihre Präferenzen anpassen oder allen Cookies zustimmen.
+                  We use cookies to improve your experience and optimize our website. 
+                  Technically necessary cookies are required for basic functions. 
+                  You can customize your preferences or accept all cookies.
                 </p>
               </div>
               
@@ -128,19 +128,19 @@ export default function CookieConsent() {
                   onClick={openSettings}
                   className="px-4 py-2 text-sm border border-cyber-400/30 text-cyber-300 hover:text-white hover:border-cyber-300 rounded-lg transition-colors"
                 >
-                  Einstellungen
+                  Settings
                 </button>
                 <button
                   onClick={acceptNecessaryOnly}
                   className="px-4 py-2 text-sm bg-void-800 text-white hover:bg-void-700 rounded-lg transition-colors border border-void-600"
                 >
-                  Nur Notwendige
+                  Necessary Only
                 </button>
                 <button
                   onClick={acceptAll}
                   className="px-6 py-2 text-sm bg-neon-600 text-white hover:bg-neon-500 rounded-lg transition-colors font-medium"
                 >
-                  Alle Akzeptieren
+                  Accept All
                 </button>
               </div>
             </div>
@@ -154,7 +154,7 @@ export default function CookieConsent() {
           <div className="bg-void-900 border border-cyber-400/30 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">Cookie-Einstellungen</h2>
+                <h2 className="text-xl font-bold text-white">Cookie Settings</h2>
                 <button
                   onClick={() => setShowSettings(false)}
                   className="text-cyber-300 hover:text-white transition-colors"
@@ -170,13 +170,13 @@ export default function CookieConsent() {
                 <div className="border border-cyber-400/20 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <h3 className="font-semibold text-white">🔒 Technisch Notwendige Cookies</h3>
-                      <p className="text-sm text-cyber-300">Erforderlich für die Grundfunktionen</p>
+                      <h3 className="font-semibold text-white">🔒 Technically Necessary Cookies</h3>
+                      <p className="text-sm text-cyber-300">Required for basic functions</p>
                     </div>
-                    <div className="text-sm text-cyber-400">Immer aktiv</div>
+                    <div className="text-sm text-cyber-400">Always active</div>
                   </div>
                   <p className="text-sm text-cyber-200">
-                    Diese Cookies sind für die Funktionsweise der Website erforderlich und können nicht deaktiviert werden.
+                    These cookies are required for the website to function and cannot be disabled.
                   </p>
                 </div>
 
@@ -184,8 +184,8 @@ export default function CookieConsent() {
                 <div className="border border-cyber-400/20 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <h3 className="font-semibold text-white">📊 Analyse-Cookies</h3>
-                      <p className="text-sm text-cyber-300">Website-Nutzungsstatistiken</p>
+                      <h3 className="font-semibold text-white">📊 Analytics Cookies</h3>
+                      <p className="text-sm text-cyber-300">Website usage statistics</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -198,7 +198,7 @@ export default function CookieConsent() {
                     </label>
                   </div>
                   <p className="text-sm text-cyber-200">
-                    Helfen uns zu verstehen, wie Besucher mit der Website interagieren (Google Analytics, Vercel Analytics).
+                    Help us understand how visitors interact with the website (Google Analytics, Vercel Analytics).
                   </p>
                 </div>
 
@@ -206,8 +206,8 @@ export default function CookieConsent() {
                 <div className="border border-cyber-400/20 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <h3 className="font-semibold text-white">🎯 Marketing-Cookies</h3>
-                      <p className="text-sm text-cyber-300">Personalisierte Werbung</p>
+                      <h3 className="font-semibold text-white">🎯 Marketing Cookies</h3>
+                      <p className="text-sm text-cyber-300">Personalized advertising</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -220,7 +220,7 @@ export default function CookieConsent() {
                     </label>
                   </div>
                   <p className="text-sm text-cyber-200">
-                    Ermöglichen personalisierte Anzeigen basierend auf Ihren Interessen (Google AdSense, geplant).
+                    Enable personalized ads based on your interests (Google AdSense, planned).
                   </p>
                 </div>
               </div>
@@ -230,19 +230,19 @@ export default function CookieConsent() {
                   onClick={() => setShowSettings(false)}
                   className="px-4 py-2 text-sm border border-cyber-400/30 text-cyber-300 hover:text-white hover:border-cyber-300 rounded-lg transition-colors"
                 >
-                  Abbrechen
+                  Cancel
                 </button>
                 <button
                   onClick={acceptNecessaryOnly}
                   className="px-4 py-2 text-sm bg-red-600/20 border border-red-500/30 text-red-300 hover:bg-red-600/30 hover:text-white rounded-lg transition-colors"
                 >
-                  Alle Widerrufen
+                  Withdraw All
                 </button>
                 <button
                   onClick={handleCustomSave}
                   className="px-6 py-2 text-sm bg-neon-600 text-white hover:bg-neon-500 rounded-lg transition-colors font-medium flex-1 sm:flex-none"
                 >
-                  Einstellungen Speichern
+                  Save Settings
                 </button>
               </div>
             </div>

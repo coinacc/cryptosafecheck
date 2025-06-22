@@ -124,7 +124,7 @@ export default function RootLayout({ children }) {
                       AGB
                     </a>
                     <a href="/cookies" className="text-trust-300 hover:text-white transition-colors font-medium">
-                      🍪 Cookie-Einstellungen
+                      🍪 Cookie Settings
                     </a>
                   </div>
                 </div>
