@@ -2,10 +2,8 @@
 
 export default function CookieButton() {
   const handleCookieSettings = () => {
-    // Clear existing consent to trigger the banner/settings
-    localStorage.removeItem('cryptosafecheck_cookie_consent');
-    // Reload the page to show the banner
-    window.location.reload();
+    // Trigger a custom event to open the cookie settings modal
+    window.dispatchEvent(new CustomEvent('openCookieSettings'));
   };
 
   return (

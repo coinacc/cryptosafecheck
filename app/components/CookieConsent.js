@@ -20,6 +20,25 @@ export default function CookieConsent() {
       const savedPreferences = JSON.parse(consent);
       setPreferences(savedPreferences);
     }
+
+    // Listen for custom event to open settings
+    const handleOpenSettings = () => {
+      // Load current preferences before opening settings
+      const currentConsent = localStorage.getItem('cryptosafecheck_cookie_consent');
+      if (currentConsent) {
+        const currentPreferences = JSON.parse(currentConsent);
+        console.log('Loading current preferences:', currentPreferences);
+        setPreferences(currentPreferences);
+      }
+      setShowSettings(true);
+      setShowBanner(false);
+    };
+
+    window.addEventListener('openCookieSettings', handleOpenSettings);
+    
+    return () => {
+      window.removeEventListener('openCookieSettings', handleOpenSettings);
+    };
   }, []);
 
   const savePreferences = (prefs) => {
