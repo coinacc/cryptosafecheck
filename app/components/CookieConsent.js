@@ -79,12 +79,31 @@ export default function CookieConsent() {
     setShowSettings(true);
   };
 
-  if (!showBanner && !showSettings) {
+  // Check if user has given consent (show floating button)
+  const hasConsent = !showBanner && !showSettings;
+  const shouldShowFloatingButton = hasConsent && localStorage.getItem('cryptosafecheck_cookie_consent');
+
+  if (!showBanner && !showSettings && !shouldShowFloatingButton) {
     return null;
   }
 
   return (
     <>
+      {/* Floating Cookie Settings Button */}
+      {shouldShowFloatingButton && (
+        <button
+          onClick={openSettings}
+          className="fixed bottom-6 right-6 z-40 bg-void-800/90 backdrop-blur-sm border border-cyber-400/30 text-white p-3 rounded-full hover:bg-void-700/90 transition-all duration-300 hover:scale-110 shadow-lg"
+          title="Cookie-Einstellungen"
+          aria-label="Cookie-Einstellungen öffnen"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+      )}
+
       {/* Cookie Banner */}
       {showBanner && !showSettings && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-void-900/95 backdrop-blur-sm border-t border-cyber-400/30 p-4 md:p-6">
@@ -212,6 +231,12 @@ export default function CookieConsent() {
                   className="px-4 py-2 text-sm border border-cyber-400/30 text-cyber-300 hover:text-white hover:border-cyber-300 rounded-lg transition-colors"
                 >
                   Abbrechen
+                </button>
+                <button
+                  onClick={acceptNecessaryOnly}
+                  className="px-4 py-2 text-sm bg-red-600/20 border border-red-500/30 text-red-300 hover:bg-red-600/30 hover:text-white rounded-lg transition-colors"
+                >
+                  Alle Widerrufen
                 </button>
                 <button
                   onClick={handleCustomSave}
