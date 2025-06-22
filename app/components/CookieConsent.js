@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [preferences, setPreferences] = useState({
     necessary: true, // Always required
     analytics: false,
@@ -12,6 +13,9 @@ export default function CookieConsent() {
   });
 
   useEffect(() => {
+    // Set client-side flag first
+    setIsClient(true);
+    
     // Check if user has already made a choice
     const consent = localStorage.getItem('cryptosafecheck_cookie_consent');
     if (!consent) {
@@ -79,9 +83,9 @@ export default function CookieConsent() {
     setShowSettings(true);
   };
 
-  // Check if user has given consent (show floating button)
+  // Check if user has given consent (show floating button) - only on client
   const hasConsent = !showBanner && !showSettings;
-  const shouldShowFloatingButton = hasConsent && typeof window !== 'undefined' && localStorage.getItem('cryptosafecheck_cookie_consent');
+  const shouldShowFloatingButton = isClient && hasConsent && typeof window !== 'undefined' && localStorage.getItem('cryptosafecheck_cookie_consent');
 
   if (!showBanner && !showSettings && !shouldShowFloatingButton) {
     return null;
