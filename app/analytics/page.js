@@ -145,9 +145,9 @@ export default function AnalyticsPage() {
   // Show loading spinner while checking authentication
   if (checkingAuth) {
     return (
-      <div className="min-h-screen matrix-bg flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-void-950 to-void-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyber-500 mx-auto glow-cyber"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyber-500 mx-auto"></div>
           <p className="mt-4 text-cyber-200">Checking authentication...</p>
         </div>
       </div>
@@ -157,9 +157,9 @@ export default function AnalyticsPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen matrix-bg flex items-center justify-center">
-        <div className="max-w-md w-full space-y-8 p-8 glass-strong rounded-lg neon-border-cyber">
+        <div className="max-w-md w-full space-y-8 p-8 bg-void-800/30 rounded-lg border border-cyber-400/20">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gradient-cyber">Analytics Dashboard</h2>
+            <h2 className="text-3xl font-bold text-white">Analytics Dashboard</h2>
             <p className="mt-2 text-cyber-200">Enter password to access internal analytics</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-6">
@@ -169,7 +169,7 @@ export default function AnalyticsPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                className="w-full px-4 py-3 glass neon-border rounded-lg focus:ring-2 focus:ring-cyber-500 focus:border-transparent text-cyber-100 placeholder-cyber-300 hover:glow-cyber transition-all duration-300"
+                className="w-full px-4 py-3 bg-void-900/50 border border-cyber-500/30 rounded-lg focus:border-cyber-500 focus:outline-none text-cyber-100 placeholder-cyber-300 transition-colors"
                 required
               />
               <button
@@ -198,7 +198,7 @@ export default function AnalyticsPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full glass neon-border-cyber text-cyber-100 font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:glow-cyber hover-glow"
+              className="w-full bg-cyber-600/20 border border-cyber-400/30 text-cyber-100 font-medium py-3 px-4 rounded-lg transition-colors hover:bg-cyber-600/30"
             >
               {loading ? 'Authenticating...' : 'Access Analytics'}
             </button>
@@ -210,9 +210,9 @@ export default function AnalyticsPage() {
 
   if (!analytics || !realTimeStats) {
     return (
-      <div className="min-h-screen matrix-bg flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-void-950 to-void-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyber-500 mx-auto glow-cyber"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyber-500 mx-auto"></div>
           <p className="mt-4 text-cyber-200">Loading analytics...</p>
         </div>
       </div>
@@ -229,16 +229,16 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="min-h-screen matrix-bg p-6">
+    <div className="min-h-screen bg-gradient-to-b from-void-950 to-void-900 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gradient-cyber">Analytics Dashboard</h1>
+            <h1 className="text-3xl font-bold text-white">Analytics Dashboard</h1>
             <p className="text-cyber-200">Internal usage and cost monitoring</p>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 text-cyber-300 hover:text-cyber-100 transition-all duration-300 hover:glow-cyber rounded-md glass"
+            className="flex items-center gap-2 px-4 py-2 text-cyber-300 hover:text-cyber-100 transition-colors rounded-md bg-void-800/30 border border-cyber-400/20"
             title="Logout"
           >
             <LogOut className="w-5 h-5" />
@@ -248,48 +248,48 @@ export default function AnalyticsPage() {
 
         {/* Real-time Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="glass-strong rounded-lg p-6 shadow-lg neon-border hover-glow">
+          <div className="bg-void-800/30 rounded-lg p-6 shadow-sm border border-cyber-400/20">
             <div className="flex items-center">
-              <Activity className="w-8 h-8 text-cyber-400 glow-cyber" />
+              <Activity className="w-8 h-8 text-cyber-400" />
               <div className="ml-4">
                 <p className="text-sm text-cyber-300">Today's Requests</p>
-                <p className="text-2xl font-bold text-gradient-cyber">
+                <p className="text-2xl font-bold text-white">
                   {formatNumber(realTimeStats?.today?.totalRequests)}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="glass-strong rounded-lg p-6 shadow-lg neon-border hover-glow">
+          <div className="bg-void-800/30 rounded-lg p-6 shadow-sm border border-cyber-400/20">
             <div className="flex items-center">
-              <DollarSign className="w-8 h-8 text-neon-400 glow-neon" />
+              <DollarSign className="w-8 h-8 text-neon-400" />
               <div className="ml-4">
                 <p className="text-sm text-cyber-300">Today's Cost</p>
-                <p className="text-2xl font-bold text-gradient-neon">
+                <p className="text-2xl font-bold text-neon-300">
                   {formatCurrency(realTimeStats?.today?.totalCost)}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="glass-strong rounded-lg p-6 shadow-lg neon-border hover-glow">
+          <div className="bg-void-800/30 rounded-lg p-6 shadow-sm border border-cyber-400/20">
             <div className="flex items-center">
-              <Database className="w-8 h-8 text-bitcoin-400 glow-bitcoin" />
+              <Database className="w-8 h-8 text-bitcoin-400" />
               <div className="ml-4">
                 <p className="text-sm text-cyber-300">Cache Hit Rate</p>
-                <p className="text-2xl font-bold text-gradient-bitcoin">
+                <p className="text-2xl font-bold text-bitcoin-300">
                   {realTimeStats?.cacheHitRate || '0'}%
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="glass-strong rounded-lg p-6 shadow-lg neon-border hover-glow">
+          <div className="bg-void-800/30 rounded-lg p-6 shadow-sm border border-cyber-400/20">
             <div className="flex items-center">
-              <Clock className="w-8 h-8 text-cyber-400 glow-cyber" />
+              <Clock className="w-8 h-8 text-cyber-400" />
               <div className="ml-4">
                 <p className="text-sm text-cyber-300">Avg Response Time</p>
-                <p className="text-2xl font-bold text-gradient-cyber">
+                <p className="text-2xl font-bold text-white">
                   {Math.round(realTimeStats?.today?.avgResponseTime || 0)}ms
                 </p>
               </div>
@@ -301,7 +301,7 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Daily Requests Chart */}
           <div className="glass-strong rounded-lg p-6 shadow-lg neon-border hover-glow">
-            <h3 className="text-lg font-bold text-gradient-cyber mb-4">Daily Requests</h3>
+            <h3 className="text-lg font-bold text-white mb-4">Daily Requests</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={analytics?.dailyData || []}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -315,7 +315,7 @@ export default function AnalyticsPage() {
 
           {/* Daily Costs Chart */}
           <div className="glass-strong rounded-lg p-6 shadow-lg neon-border hover-glow">
-            <h3 className="text-lg font-bold text-gradient-neon mb-4">Daily Costs</h3>
+            <h3 className="text-lg font-bold text-white mb-4">Daily Costs</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={analytics?.dailyData || []}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -330,35 +330,35 @@ export default function AnalyticsPage() {
 
         {/* Summary Stats */}
         <div className="glass-strong rounded-lg p-6 shadow-lg mb-8 neon-border hover-glow">
-          <h3 className="text-lg font-bold text-gradient-cyber mb-4">30-Day Summary</h3>
+          <h3 className="text-lg font-bold text-white mb-4">30-Day Summary</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
             <div>
               <p className="text-sm text-cyber-300">Total Requests</p>
-              <p className="text-xl font-bold text-gradient-cyber">
+              <p className="text-xl font-bold text-white">
                 {formatNumber(analytics?.totals?.totalRequests)}
               </p>
             </div>
             <div>
               <p className="text-sm text-cyber-300">Total Tokens</p>
-              <p className="text-xl font-bold text-gradient-neon">
+              <p className="text-xl font-bold text-neon-300">
                 {formatNumber(analytics?.totals?.totalTokens)}
               </p>
             </div>
             <div>
               <p className="text-sm text-cyber-300">Total Cost</p>
-              <p className="text-xl font-bold text-gradient-bitcoin">
+              <p className="text-xl font-bold text-bitcoin-300">
                 {formatCurrency(analytics?.totals?.totalCost)}
               </p>
             </div>
             <div>
               <p className="text-sm text-cyber-300">Cached Requests</p>
-              <p className="text-xl font-bold text-gradient-cyber">
+              <p className="text-xl font-bold text-white">
                 {formatNumber(analytics?.totals?.cachedRequests)}
               </p>
             </div>
             <div>
               <p className="text-sm text-cyber-300">Errors</p>
-              <p className="text-xl font-bold text-gradient-bitcoin">
+              <p className="text-xl font-bold text-bitcoin-300">
                 {formatNumber(analytics?.totals?.errors)}
               </p>
             </div>
