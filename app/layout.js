@@ -102,13 +102,30 @@ export default function RootLayout({ children }) {
 
             <footer className="bg-trust-800 border-t border-trust-700 mt-20">
               <div className="container mx-auto px-6 py-8">
-                <div className="text-center text-sm text-trust-400 space-y-2">
-                  <p>
-                    This tool is for educational purposes only. Always do your own research before making investment decisions.
-                  </p>
-                  <p>
-                    CryptoSafeCheck - Built with Next.js, Google Gemini, and Vercel
-                  </p>
+                <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                  <div className="text-center md:text-left text-sm text-trust-400">
+                    <p className="mb-2">
+                      This tool is for educational purposes only. Always do your own research before making investment decisions.
+                    </p>
+                    <p>
+                      CryptoSafeCheck - Built with Next.js, Google Gemini, and Vercel
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-wrap justify-center md:justify-end gap-4 text-sm">
+                    <a href="/impressum" className="text-trust-300 hover:text-white transition-colors">
+                      Impressum
+                    </a>
+                    <a href="/privacy" className="text-trust-300 hover:text-white transition-colors">
+                      Datenschutz
+                    </a>
+                    <a href="/terms" className="text-trust-300 hover:text-white transition-colors">
+                      AGB
+                    </a>
+                    <a href="/cookies" className="text-trust-300 hover:text-white transition-colors">
+                      Cookies
+                    </a>
+                  </div>
                 </div>
               </div>
             </footer>
