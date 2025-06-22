@@ -2,7 +2,10 @@
 
 export default function CookieButton() {
   const handleCookieSettings = () => {
-    alert('Cookie-Einstellungen würden hier geöffnet. In der finalen Version wird hier ein Cookie-Consent-Banner implementiert.');
+    // Clear existing consent to trigger the banner/settings
+    localStorage.removeItem('cryptosafecheck_cookie_consent');
+    // Reload the page to show the banner
+    window.location.reload();
   };
 
   return (
