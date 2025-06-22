@@ -33,7 +33,7 @@ export const metadata = {
     images: ['/og-image.png']
   },
   verification: {
-    google: 'your-google-verification-code'
+    google: 'google6670885e29916006'
   },
   metadataBase: new URL('https://cryptosafecheck.io')
 }
