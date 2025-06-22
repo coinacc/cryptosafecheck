@@ -20,6 +20,7 @@ export default function Home() {
   const [progressInterval, setProgressInterval] = useState(null);
   const [isClient, setIsClient] = useState(false);
   const [liveStats, setLiveStats] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Ref to track current request for cancellation
   const currentRequestRef = useRef(null);
@@ -364,35 +365,53 @@ export default function Home() {
       {/* Header */}
       <div className="relative">
         <div className="glass-dark rounded-b-2xl border-0 border-b border-neon-500/20">
-          <div className="flex items-center justify-between px-4 xs:px-6 md:px-8 py-4 md:py-6">
-            <div className="flex items-center space-x-2 xs:space-x-3">
-              <button onClick={handleGoHome} className="flex items-center space-x-3 transition-colors group">
+          <div className="flex items-center justify-between px-3 sm:px-4 md:px-8 py-3 sm:py-4 md:py-6">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <button onClick={handleGoHome} className="flex items-center space-x-2 sm:space-x-3 transition-colors group">
                 <div className="relative">
-                  <div className="w-10 h-10 bg-cyber-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-cyber-600 rounded-xl flex items-center justify-center">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
                     </svg>
                   </div>
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-neon-500 rounded-full border-2 border-void-900"></div>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-neon-500 rounded-full border-2 border-void-900"></div>
                 </div>
-                <span className="text-base xs:text-xl font-bold text-white">
-                  CryptoSafeCheck
+                <span className="text-sm sm:text-base md:text-xl font-bold text-white">
+                  <span className="hidden xs:inline">CryptoSafeCheck</span>
+                  <span className="xs:hidden">CSC</span>
                 </span>
               </button>
             </div>
-            <div className="flex items-center space-x-3 xs:space-x-4 md:space-x-6">
+            
+            {/* Mobile Navigation Button */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 text-cyber-300 hover:text-cyber-100 transition-colors rounded-md min-h-[44px] min-w-[44px]"
+              aria-label="Toggle mobile menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-6">
               {(result || isAnalyzing) && (
                 <button 
                   onClick={handleGoHome}
-                  className="text-sm text-cyber-300 hover:text-cyber-100 transition-colors px-3 py-1 rounded-md"
+                  className="text-sm text-cyber-300 hover:text-cyber-100 transition-colors px-3 py-2 rounded-md min-h-[44px]"
                 >
                   Home
                 </button>
               )}
-              <Link href="/about" className="text-sm text-cyber-300 hover:text-cyber-100 transition-colors px-3 py-1 rounded-md">
+              <Link href="/about" className="text-sm text-cyber-300 hover:text-cyber-100 transition-colors px-3 py-2 rounded-md min-h-[44px]">
                 About
               </Link>
-              <Link href="/blog" className="text-sm text-cyber-300 hover:text-cyber-100 transition-colors px-3 py-1 rounded-md">
+              <Link href="/blog" className="text-sm text-cyber-300 hover:text-cyber-100 transition-colors px-3 py-2 rounded-md min-h-[44px]">
                 Blog
               </Link>
               {isClient && window.location.hostname === 'localhost' && (
@@ -411,6 +430,39 @@ export default function Home() {
             </div>
           </div>
         </div>
+        
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-void-900/95 backdrop-blur-sm border-t border-cyber-400/20">
+            <div className="px-3 py-4 space-y-1">
+              {(result || isAnalyzing) && (
+                <button 
+                  onClick={() => {
+                    handleGoHome();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left text-cyber-300 hover:text-cyber-100 hover:bg-cyber-900/30 transition-colors px-3 py-3 rounded-md min-h-[44px]"
+                >
+                  Home
+                </button>
+              )}
+              <Link 
+                href="/about" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block text-cyber-300 hover:text-cyber-100 hover:bg-cyber-900/30 transition-colors px-3 py-3 rounded-md min-h-[44px]"
+              >
+                About
+              </Link>
+              <Link 
+                href="/blog" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block text-cyber-300 hover:text-cyber-100 hover:bg-cyber-900/30 transition-colors px-3 py-3 rounded-md min-h-[44px]"
+              >
+                Blog
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Hero Section */}
@@ -436,51 +488,51 @@ export default function Home() {
           </div>
 
           {/* Hero Header */}
-          <div className="max-w-6xl mx-auto px-8 py-16 relative z-10">
-            <div className="text-center mb-12">
-              <h1 className="text-4xl xs:text-5xl md:text-6xl font-bold mb-6">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 relative z-10">
+            <div className="text-center mb-8 sm:mb-12">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
                 <span className="text-white">Detect Crypto</span>
                 <br />
                 <span className="text-cyber-300">Scams Instantly</span>
               </h1>
-              <p className="text-lg xs:text-xl text-void-200 mb-8 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-void-200 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">
                 AI-powered analysis of crypto projects, tokens, and websites. Get comprehensive risk assessments in seconds using advanced machine learning and blockchain intelligence.
               </p>
 
               {/* Threat Level Indicator */}
-              <div className="inline-flex items-center gap-3 bg-void-800/50 px-6 py-3 rounded-full border border-cyber-400/30">
+              <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 bg-void-800/50 px-4 sm:px-6 py-3 rounded-full border border-cyber-400/30">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-neon-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-neon-400">THREAT LEVEL: MONITORING</span>
+                  <span className="text-xs sm:text-sm font-medium text-neon-400">THREAT LEVEL: MONITORING</span>
                 </div>
-                <div className="w-px h-4 bg-cyber-500/30"></div>
+                <div className="hidden sm:block w-px h-4 bg-cyber-500/30"></div>
                 <span className="text-xs text-cyber-300">Real-time scam detection active</span>
               </div>
 
               {/* Live Stats Display */}
               {liveStats && (
-                <div className="mt-8 bg-void-800/30 rounded-xl p-6 border border-cyber-400/20">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="mt-6 sm:mt-8 bg-void-800/30 rounded-xl p-4 sm:p-6 border border-cyber-400/20">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                     <div className="text-center">
-                      <div className="text-2xl md:text-3xl font-bold text-white mb-1">
+                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1">
                         {liveStats.totalScans.toLocaleString()}
                       </div>
                       <div className="text-xs text-cyber-300">Total Scans</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl md:text-3xl font-bold text-bitcoin-300 mb-1">
+                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-bitcoin-300 mb-1">
                         {liveStats.scamsDetected.toLocaleString()}
                       </div>
                       <div className="text-xs text-cyber-300">Scams Detected</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl md:text-3xl font-bold text-neon-300 mb-1">
+                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-neon-300 mb-1">
                         {liveStats.successRate}%
                       </div>
                       <div className="text-xs text-cyber-300">Success Rate</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl md:text-3xl font-bold text-white mb-1">
+                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1">
                         {liveStats.todayScans}
                       </div>
                       <div className="text-xs text-cyber-300">Today's Scans</div>
@@ -496,10 +548,10 @@ export default function Home() {
 
             {/* Main Analysis Card */}
             <div className="max-w-4xl mx-auto">
-              <div className="bg-void-800/30 border border-cyber-400/20 rounded-2xl p-8">
+              <div className="bg-void-800/30 border border-cyber-400/20 rounded-2xl p-4 sm:p-6 md:p-8">
                 <form onSubmit={handleSubmit}>
                   {/* Enhanced Input field */}
-                  <div className="relative mb-6">
+                  <div className="relative mb-4 sm:mb-6">
                     <div className="relative">
                       <input
                         type="text"
@@ -508,16 +560,16 @@ export default function Home() {
                         placeholder="Enter crypto project URL, contract address, or name..."
                         disabled={isAnalyzing}
                         autoFocus
-                        className="w-full p-5 pr-14 bg-void-900/50 border border-cyber-500/30 text-white rounded-xl focus:border-neon-500 focus:outline-none transition-colors text-lg placeholder-void-400 hover:border-cyber-400/50"
+                        className="w-full p-3 sm:p-4 md:p-5 pr-12 sm:pr-14 bg-void-900/50 border border-cyber-500/30 text-white rounded-xl focus:border-neon-500 focus:outline-none transition-colors text-base sm:text-lg placeholder-void-400 hover:border-cyber-400/50 min-h-[44px]"
                       />
                       {url && (
                         <button
                           type="button"
                           onClick={handleClear}
-                          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-void-400 hover:text-neon-400 transition-colors"
+                          className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-void-400 hover:text-neon-400 transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
                           aria-label="Clear input"
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
@@ -530,19 +582,20 @@ export default function Home() {
                     <button
                       type="submit"
                       disabled={!url.trim() || isAnalyzing}
-                      className="group relative px-8 py-4 font-bold text-lg rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                      className="group relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 font-bold text-base sm:text-lg rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden min-h-[44px]"
                     >
                       {isAnalyzing ? (
-                        <span className="flex items-center gap-3 bg-cyber-600 text-white px-8 py-4 rounded-xl border border-cyber-400/30">
-                          <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                        <span className="flex items-center justify-center gap-2 sm:gap-3 bg-cyber-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl border border-cyber-400/30">
+                          <svg className="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
                           <span>Analyzing...</span>
                         </span>
                       ) : (
-                        <span className="bg-cyber-600 text-white px-8 py-4 rounded-xl border border-cyber-400/30 group-hover:bg-cyber-500 transition-colors">
-                          🛡️ Analyze for Scams
+                        <span className="flex items-center justify-center bg-cyber-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl border border-cyber-400/30 group-hover:bg-cyber-500 transition-colors">
+                          <span className="hidden xs:inline">🛡️ Analyze for Scams</span>
+                          <span className="xs:hidden">🛡️ Scan</span>
                         </span>
                       )}
                     </button>
@@ -550,47 +603,47 @@ export default function Home() {
                 </form>
 
                 {/* Security Features Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 pt-8 border-t border-cyber-700/30">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-cyber-700/30">
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-neon-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                      <svg className="w-6 h-6 text-void-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-neon-600 rounded-xl flex items-center justify-center mx-auto mb-3">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-void-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
                       </svg>
                     </div>
-                    <h3 className="font-semibold text-white mb-2">Smart Contract Analysis</h3>
-                    <p className="text-sm text-void-300">Deep inspection of contract code and vulnerabilities</p>
+                    <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">Smart Contract Analysis</h3>
+                    <p className="text-xs sm:text-sm text-void-300">Deep inspection of contract code and vulnerabilities</p>
                   </div>
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-cyber-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-cyber-600 rounded-xl flex items-center justify-center mx-auto mb-3">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
-                    <h3 className="font-semibold text-white mb-2">Real-time Intelligence</h3>
-                    <p className="text-sm text-void-300">Live data from multiple blockchain networks</p>
+                    <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">Real-time Intelligence</h3>
+                    <p className="text-xs sm:text-sm text-void-300">Live data from multiple blockchain networks</p>
                   </div>
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-bitcoin-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                      <svg className="w-6 h-6 text-void-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-bitcoin-600 rounded-xl flex items-center justify-center mx-auto mb-3">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-void-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
-                    <h3 className="font-semibold text-white mb-2">AI Risk Assessment</h3>
-                    <p className="text-sm text-void-300">Advanced machine learning threat detection</p>
+                    <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">AI Risk Assessment</h3>
+                    <p className="text-xs sm:text-sm text-void-300">Advanced machine learning threat detection</p>
                   </div>
                 </div>
 
                 {/* Trust Indicators */}
-                <div className="flex flex-wrap justify-center gap-4 mt-8 pt-6 border-t border-cyber-700/30">
-                  <div className="flex items-center space-x-2 text-sm text-void-400">
+                <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-cyber-700/30">
+                  <div className="flex items-center space-x-2 text-xs sm:text-sm text-void-400">
                     <div className="w-2 h-2 bg-neon-500 rounded-full animate-pulse"></div>
                     <span>AI Powered</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-void-400">
+                  <div className="flex items-center space-x-2 text-xs sm:text-sm text-void-400">
                     <div className="w-2 h-2 bg-cyber-500 rounded-full animate-pulse"></div>
                     <span>Real-time Data</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-void-400">
+                  <div className="flex items-center space-x-2 text-xs sm:text-sm text-void-400">
                     <div className="w-2 h-2 bg-bitcoin-500 rounded-full animate-pulse"></div>
                     <span>100% Free</span>
                   </div>

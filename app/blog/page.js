@@ -1,11 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { getAllPosts, getFeaturedPosts } from '../lib/blog-data';
+import { getAllPosts } from '../lib/blog-data';
 
 export default function BlogPage() {
   const allPosts = getAllPosts();
-  const featuredPosts = getFeaturedPosts();
   return (
     <div className="min-h-screen bg-gradient-to-b from-void-950 to-void-900">
       {/* Header */}
@@ -43,46 +42,6 @@ export default function BlogPage() {
           <p className="text-cyber-200 text-lg">Expert insights on cryptocurrency scam detection and blockchain safety</p>
         </div>
 
-        {/* Featured Posts */}
-        {featuredPosts.length > 0 && (
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold text-white mb-8">Featured Articles</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {featuredPosts.map((post) => (
-                <article key={post.slug} className="bg-void-800/30 rounded-lg border border-cyber-400/20 p-6 hover:border-cyber-400/40 transition-colors">
-                  <div className="flex items-center gap-2 text-sm text-cyber-300 mb-3">
-                    <span className="bg-cyber-600/20 px-2 py-1 rounded text-xs">{post.category}</span>
-                    <span>•</span>
-                    <span>{post.readingTime}</span>
-                    <span>•</span>
-                    <time>{new Date(post.publishedAt).toLocaleDateString()}</time>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3 line-clamp-2">
-                    <Link href={`/blog/${post.slug}`} className="hover:text-cyber-300 transition-colors">
-                      {post.title}
-                    </Link>
-                  </h3>
-                  <p className="text-cyber-200 mb-4 line-clamp-3">{post.excerpt}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1">
-                      {post.tags.slice(0, 2).map((tag) => (
-                        <span key={tag} className="text-xs bg-void-700/50 text-cyber-300 px-2 py-1 rounded">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    <Link 
-                      href={`/blog/${post.slug}`}
-                      className="text-neon-400 hover:text-neon-300 transition-colors text-sm font-medium"
-                    >
-                      Read More →
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* All Posts */}
         <div>
