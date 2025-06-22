@@ -56,7 +56,7 @@ export const analyzeUrl = async (userInput, sessionId = null, request = null) =>
   const startTime = Date.now();
   let cached = false;
 
-  // Check KV cache first
+  // Check Supabase cache first
   const cachedResult = await getCachedAnalysis(userInput, 'full');
   if (cachedResult) {
     cached = true;
@@ -375,7 +375,7 @@ export const analyzeUrl = async (userInput, sessionId = null, request = null) =>
     };
   }
 
-  // Cache the analysis result in KV
+  // Cache the analysis result in Supabase
   await setCachedAnalysis(userInput, result, 'full');
 
   // Calculate cost using official Gemini 2.5 Flash Lite pricing

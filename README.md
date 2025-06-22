@@ -1,6 +1,6 @@
 # 🔍 AI Crypto Check
 
-An AI-powered web application that analyzes cryptocurrency projects for potential scam indicators using Google's Gemini AI and Vercel KV for caching. Both quick scan and full analysis are completely free.
+An AI-powered web application that analyzes cryptocurrency projects for potential scam indicators using Google's Gemini AI with Supabase for caching. Both quick scan and full analysis are completely free.
 
 ## ✨ Features
 
@@ -8,7 +8,7 @@ An AI-powered web application that analyzes cryptocurrency projects for potentia
 - **Dual Analysis Modes**: Quick scan for basic detection and full analysis for comprehensive evaluation
 - **Risk Assessment**: Provides detailed safety levels with confidence scores
 - **Comprehensive Evaluation**: Checks for red flags, positive signals, and key findings
-- **Caching System**: Stores analysis results in Vercel KV to avoid redundant API calls
+- **Caching System**: Stores analysis results in Supabase to avoid redundant API calls
 - **Modern Design**: Clean, trustworthy UI built with Tailwind CSS
 - **Real-time Analysis**: Fast analysis with loading states and error handling
 - **Free Service**: Both analysis modes are completely free to use
@@ -18,7 +18,7 @@ An AI-powered web application that analyzes cryptocurrency projects for potentia
 - **Frontend**: Next.js 14 with React 18
 - **Styling**: Tailwind CSS
 - **AI**: Google Gemini 2.5 Flash Lite API
-- **Caching**: Vercel KV
+- **Caching**: Supabase
 - **Database**: Supabase
 - **Language**: JavaScript
 
@@ -28,8 +28,7 @@ Before running this application, you need:
 
 1. **Node.js** (v18 or higher)
 2. **Google AI API Key** - Get one from [Google AI Studio](https://aistudio.google.com/app/apikey)
-3. **Vercel KV Database** - For caching analysis results
-4. **Supabase Project** - Create one at [Supabase](https://supabase.com/)
+3. **Supabase Project** - Create one at [Supabase](https://supabase.com/) for database and caching
 
 ## 🚀 Setup Instructions
 
@@ -49,11 +48,7 @@ Create a `.env.local` file with the following variables:
 # Google AI API Key
 GOOGLE_AI_API_KEY=your_google_ai_api_key_here
 
-# Vercel KV Configuration (for caching)
-KV_REST_API_URL=your_vercel_kv_rest_api_url
-KV_REST_API_TOKEN=your_vercel_kv_rest_api_token
-
-# Supabase Configuration
+# Supabase Configuration (for database and caching)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here

@@ -7,7 +7,7 @@ This is a Next.js application that provides AI-powered cryptocurrency scam detec
 - **Frontend**: Next.js 14, React 18, Tailwind CSS
 - **AI**: Google Gemini 2.5 Flash Lite API
 - **Database**: Supabase (PostgreSQL)
-- **Caching**: Vercel KV
+- **Caching**: Supabase (analytics_records table)
 - **Deployment**: Vercel
 
 ## Key Commands
@@ -43,8 +43,6 @@ app/
 Required in `.env.local`:
 ```
 GOOGLE_AI_API_KEY=          # Google Gemini API key
-KV_REST_API_URL=           # Vercel KV URL
-KV_REST_API_TOKEN=         # Vercel KV token
 NEXT_PUBLIC_SUPABASE_URL=   # Supabase project URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY= # Supabase anon key
 SUPABASE_SERVICE_ROLE_KEY=  # Supabase service role key
@@ -73,7 +71,7 @@ The AI evaluates projects across 6 dimensions:
 
 ## Development Notes
 - Uses Gemini 2.5 Flash Lite model with web search capabilities
-- Implements caching to reduce API costs
+- Implements Supabase-based caching to reduce API costs (24-hour TTL)
 - Progressive analysis with real-time updates
 - Dev-only utilities available on localhost (rate limit reset, cache clearing)
 - Includes comprehensive error handling and retry logic

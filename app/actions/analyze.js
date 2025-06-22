@@ -82,7 +82,7 @@ export async function analyzeUrl(url) {
     // Get analysis from Gemini (always fresh for full analysis)
     const result = await geminiAnalyzeUrl(url);
 
-    // Supabase storage removed - now using KV caching in gemini.js
+    // Analysis results are cached in Supabase via analytics tracking
 
     return result;
   } catch (error) {
