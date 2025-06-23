@@ -16,25 +16,18 @@ export async function GET() {
       ? ((analytics.totals.totalRequests - (analytics.totals.errors || 0)) / analytics.totals.totalRequests * 100).toFixed(1)
       : '100.0';
     
-    // Estimate scams detected (assuming ~20% of successful scans detect some level of risk)
-    const successfulScans = (analytics?.totals?.totalRequests || 0) - (analytics?.totals?.errors || 0);
-    const estimatedScamsDetected = Math.floor(successfulScans * 0.2);
-    
     // Today's stats
     const todayStats = currentEnvStats?.today || {};
     const todayScans = todayStats.totalRequests || 0;
-    const todayScamsDetected = Math.floor((todayScans - (todayStats.errors || 0)) * 0.2);
     
-    // Return public-safe statistics
+    // Return public-safe statistics - honest numbers only
     const publicStats = {
-      // All-time totals
-      totalScans: Math.max(totalScans, 1247), // Minimum baseline to look established
-      scamsDetected: Math.max(estimatedScamsDetected, 284),
+      // All-time totals - show real numbers
+      totalAnalyses: totalScans,
       successRate: successRate,
       
       // Today's stats
-      todayScans: todayScans,
-      todayScamsDetected: todayScamsDetected,
+      todayAnalyses: todayScans,
       
       // System status
       status: 'operational',
@@ -47,13 +40,11 @@ export async function GET() {
   } catch (error) {
     console.error('Failed to fetch public stats:', error);
     
-    // Return fallback stats if database is unavailable
+    // Return fallback stats if database is unavailable - honest defaults
     return Response.json({
-      totalScans: 1247,
-      scamsDetected: 284,
-      successRate: '97.8',
-      todayScans: 23,
-      todayScamsDetected: 6,
+      totalAnalyses: 0,
+      successRate: '100.0',
+      todayAnalyses: 0,
       status: 'operational',
       lastUpdated: new Date().toISOString(),
     });

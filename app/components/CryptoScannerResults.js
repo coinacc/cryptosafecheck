@@ -219,6 +219,49 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
     );
   };
 
+  // Handle contract address case
+  if (result.isContractAddress || result.category === 'CONTRACT_ADDRESS') {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="rounded-lg p-6 bg-cyber-900/20 border border-cyber-500/30">
+          <div className="flex items-start space-x-4">
+            <Info className="w-6 h-6 text-cyber-400 mt-0.5" />
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-cyber-200 mb-3">Contract Address Detected</h2>
+              <p className="text-cyber-200/90 mb-4">
+                {result.summary || "Contract addresses are not supported. Please search using the project name, website URL, or token symbol instead."}
+              </p>
+              <div className="bg-void-900/50 rounded-md p-4 border border-cyber-500/20">
+                <h3 className="text-sm font-semibold text-cyber-300 mb-2">How to search for this project:</h3>
+                <ul className="space-y-2 text-sm text-cyber-200/80">
+                  <li className="flex items-start">
+                    <div className="w-1.5 h-1.5 bg-cyber-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                    <span>Copy the contract address and search for it on a blockchain explorer</span>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="w-1.5 h-1.5 bg-cyber-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                    <span>Look for the project name or token symbol on the explorer</span>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="w-1.5 h-1.5 bg-cyber-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                    <span>Search again using the project name or official website</span>
+                  </li>
+                </ul>
+              </div>
+              <button
+                onClick={onAnalyzeAgain}
+                className="mt-6 bg-cyber-500 text-void-900 px-6 py-2 rounded-md font-semibold hover:bg-cyber-400 transition-colors flex items-center"
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Try Another Search
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header Card */}

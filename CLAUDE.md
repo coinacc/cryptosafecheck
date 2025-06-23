@@ -12,8 +12,7 @@ This is a Next.js application that provides AI-powered cryptocurrency scam detec
 
 ## Key Commands
 ```bash
-# Development
-npm run dev         # Start development server (http://localhost:3000)
+# Development (Note: User will start dev server in separate terminal)
 npm run build       # Build for production
 npm run start       # Start production server
 npm run lint        # Run ESLint
