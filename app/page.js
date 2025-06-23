@@ -454,7 +454,7 @@ export default function Home() {
                 <form onSubmit={handleSubmit}>
                   {/* Enhanced Input field with integrated button */}
                   <div className="relative mb-4 sm:mb-6">
-                    <div className="flex gap-3 sm:gap-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                       <div className="relative flex-1">
                         <input
                           type="text"
@@ -481,7 +481,7 @@ export default function Home() {
                       <button
                         type="submit"
                         disabled={!url.trim() || isAnalyzing}
-                        className="px-6 sm:px-8 py-4 sm:py-5 md:py-6 font-bold text-lg sm:text-xl rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed bg-cyber-600 text-white border-2 border-cyber-400/50 hover:bg-cyber-500 hover:border-cyber-300/70 hover:shadow-lg hover:shadow-cyber-500/20 min-h-[60px] sm:min-h-[68px] flex items-center justify-center whitespace-nowrap"
+                        className="w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-5 md:py-6 font-bold text-lg sm:text-xl rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed bg-cyber-600 text-white border-2 border-cyber-400/50 hover:bg-cyber-500 hover:border-cyber-300/70 hover:shadow-lg hover:shadow-cyber-500/20 min-h-[60px] sm:min-h-[68px] flex items-center justify-center whitespace-nowrap"
                       >
                         {isAnalyzing ? (
                           <div className="flex items-center gap-2">
