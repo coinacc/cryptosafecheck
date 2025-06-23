@@ -1,6 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getCachedAnalysis, setCachedAnalysis } from './cache.js';
 import { trackApiUsage } from './analytics.js';
+import fs from 'fs';
+import path from 'path';
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
@@ -11,6 +13,29 @@ const model = genAI.getGenerativeModel({
     maxOutputTokens: 8192,
   }
 });
+
+// Debug logging (development only)
+const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production';
+const debugLogPath = path.join(process.cwd(), 'debug.log');
+
+function debugLog(type, data) {
+  if (!isDevelopment) return;
+  
+  const timestamp = new Date().toISOString();
+  const logEntry = {
+    timestamp,
+    type,
+    ...data
+  };
+  
+  const logLine = `[${timestamp}] ${type}: ${JSON.stringify(logEntry, null, 2)}\n`;
+  
+  try {
+    fs.appendFileSync(debugLogPath, logLine);
+  } catch (error) {
+    console.error('Failed to write debug log:', error);
+  }
+}
 
 // Progress tracking for SSE
 const progressCallbacks = new Map();
@@ -42,25 +67,29 @@ function cleanStringArray(arr) {
   return arr.map(item => cleanCitationTags(item)).filter(item => item.length > 0);
 }
 
-// Helper function to clean sources array
-function cleanSources(sources) {
-  if (!Array.isArray(sources)) return [];
-  return sources.map(source => ({
-    name: cleanCitationTags(source.name || ''),
-    url: source.url || null
-  })).filter(source => source.name.length > 0);
-}
 
 // Main analysis function - comprehensive crypto project analysis
 export const analyzeUrl = async (userInput, sessionId = null, request = null) => {
   const startTime = Date.now();
   let cached = false;
 
+  // Debug log the analysis start
+  debugLog('ANALYSIS_START', {
+    userInput,
+    sessionId,
+    timestamp: startTime
+  });
+
   // Check Supabase cache first
   const cachedResult = await getCachedAnalysis(userInput, 'full');
   if (cachedResult) {
     cached = true;
     console.log(`🎯 Cache HIT for analysis: ${userInput}`);
+    
+    debugLog('CACHE_HIT', {
+      userInput,
+      result: cachedResult
+    });
     
     // Track cached request
     await trackApiUsage({
@@ -81,29 +110,62 @@ export const analyzeUrl = async (userInput, sessionId = null, request = null) =>
   }
 
   // Optimized system prompt for crypto project analysis
-  const prompt = `Analyze "${userInput}" as a crypto project analyst. Search for real-time data and return only JSON.
+  const prompt = `Analyze "${userInput}" as a crypto project analyst. You have web search enabled - use it immediately. Return only JSON analysis.
+
+**CRITICAL**: Do NOT return "searching" status or ask for permission. Execute web searches NOW and provide analysis.
 
 ### ANALYSIS PROCESS ###
-1. **IDENTIFY**: Determine if input is project name, ticker, contract address, or URL
-2. **SPECIAL HANDLING FOR CONTRACT ADDRESSES**: 
-   IMMEDIATELY check if the input looks like a blockchain address:
-   - Ethereum/BSC/Polygon: Starts with "0x" followed by 40 hexadecimal characters
-   - Solana: 32-44 character base58 string (mix of letters/numbers, no spaces/special chars except pump suffix)
-   - Bitcoin: Starts with "1", "3", "bc1", or similar patterns
-   - Any string that looks like a random hash or address (long alphanumeric without spaces/dots)
+1. **CONTRACT ADDRESS CHECK**: If input matches EXACT contract address patterns, return not_supported:
    
-   If it matches ANY of these patterns or looks like an address, IMMEDIATELY return:
-   {"status": "contract_address_not_supported", "message": "Contract addresses are not supported. Please search using the project name, website URL, or token symbol instead.", "input_type": "contract_address"}
+   - **Ethereum/BSC/Polygon**: EXACTLY "0x" followed by EXACTLY 40 hexadecimal characters
+   - **Solana**: 32-44 character base58 string using ONLY: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
+   - **Bitcoin**: Starts with "1", "3", or "bc1" followed by specific patterns
    
-   DO NOT attempt to search or analyze contract addresses!
-3. **SEARCH**: Prioritize official sites → CoinGecko/CMC → GitHub → social media → regulatory sources
+   If contract address, return: {"status": "contract_address_not_supported", "message": "Contract addresses are not supported. Please search using the project name, website URL, or token symbol instead.", "input_type": "contract_address"}
+
+2. **MANDATORY SEARCH PHASE**: For ANY other input, IMMEDIATELY search the web:
+   
+   **SEARCH REQUIREMENTS (EXECUTE NOW)**:
+   - You have web search access enabled - use it directly
+   - Do NOT ask for permission to search - just search immediately
+   - Do NOT return "searching" status - perform searches and return analysis
+   - Search CoinGecko AND CoinMarketCap for every non-contract input NOW
+
+3. **SEARCH STRATEGY**: Based on input type, use these REQUIRED searches:
+   
+   **For Token Symbols (2-12 characters like "ADA", "BTC", "ETH", "DAG", "RSWETH", "USDC", "NKYC")**:
+   - IMMEDIATELY execute these web searches:
+     * Search web for: "[SYMBOL] cryptocurrency CoinGecko" and analyze results
+     * Search web for: "[SYMBOL] CoinMarketCap" and analyze results  
+     * Search web for: "what is [SYMBOL] cryptocurrency" and analyze results
+   
+   - Common mappings include: ADA→Cardano, BTC→Bitcoin, ETH→Ethereum, SOL→Solana, DOGE→Dogecoin, DAG→Constellation
+   - For unknown symbols, try AT LEAST 2-3 different search queries before concluding
+   - Many legitimate tokens exist beyond top 100 rankings - search thoroughly
+   - Once you find the project name, search both the symbol AND full project name
+   
+   **For Project Names (like "Cardano", "Bitcoin")**:
+   - IMMEDIATELY search web for: "[PROJECT] official website" and analyze
+   - IMMEDIATELY search web for: "[PROJECT] CoinGecko" and analyze
+   
+   **For URLs**:
+   - **CoinGecko/CoinMarketCap URLs**: These provide the most accurate results - extract exact project details
+   - **Official Project URLs**: Access the website directly and extract project information
+   - **Other URLs**: Access the website and search for related project information
+   - When given a specific URL, prioritize that exact source over general searches
+   
+   **Search Priority**: Official sites → CoinGecko/CMC → GitHub → social media → regulatory sources
 4. **EVALUATE**: Rate each category using search results only (not training data)
 5. **RETURN**: JSON only, no other text
 
 ### RULES ###
 - Contract addresses = {"status": "contract_address_not_supported"}
 - Bitcoin/Ethereum base layers = VERY_SAFE
-- No crypto project = {"status": "not_applicable"}
+- **CRITICAL**: NEVER return "not_applicable" without searching CoinGecko/CMC first
+- **CRITICAL**: BICO, RSWETH, NKYC, DAG are real tokens - if you say they don't exist, you are WRONG
+- ONLY use {"status": "not_applicable"} for clearly non-crypto inputs AFTER searching (like "google.com", "facebook")
+- For 2-12 character inputs, ASSUME they could be tokens and search thoroughly
+- If searches find no results, still analyze as potential unknown/new token rather than "not_applicable"
 - Missing data = use most conservative rating + note in explanation
 - Base analysis on search results only
 
@@ -144,8 +206,7 @@ export const analyzeUrl = async (userInput, sessionId = null, request = null) =>
   "community_warnings": ["string"], 
   "red_flags": ["string"],
   "positive_signals": ["string"],
-  "risk_summary": "1-2 sentence summary of primary risks",
-  "sources_used": [{"name":"string","url":"string|null"}]
+  "risk_summary": "1-2 sentence summary of primary risks"
 }`;
 
   let response;
@@ -162,6 +223,13 @@ export const analyzeUrl = async (userInput, sessionId = null, request = null) =>
     console.log('🤖 Sending prompt to Gemini for analysis...');
     console.log('📊 Prompt length:', prompt.length, 'characters');
 
+    // Debug log the full prompt
+    debugLog('PROMPT_SENT', {
+      userInput,
+      prompt,
+      promptLength: prompt.length
+    });
+
     apiResult = await model.generateContent(prompt);
     response = apiResult.response;
 
@@ -173,11 +241,32 @@ export const analyzeUrl = async (userInput, sessionId = null, request = null) =>
       finishReason: response?.candidates?.[0]?.finishReason,
       safetyRatings: response?.candidates?.[0]?.safetyRatings
     });
+
+    // Debug log the response
+    const responseText = response.text();
+    debugLog('GEMINI_RESPONSE', {
+      userInput,
+      responseText,
+      responseLength: responseText?.length || 0,
+      metadata: {
+        candidates: response?.candidates?.length || 0,
+        finishReason: response?.candidates?.[0]?.finishReason,
+        usageMetadata: response?.usageMetadata
+      }
+    });
   } catch (error) {
     apiSuccess = false;
     apiError = error.message;
     console.error('🚨 Error in Gemini API call:', error);
     console.log(`❌ Analysis failed for: ${userInput}`);
+    
+    // Debug log the error
+    debugLog('API_ERROR', {
+      userInput,
+      error: error.message,
+      stack: error.stack
+    });
+    
     throw error;
   }
 
@@ -335,7 +424,6 @@ export const analyzeUrl = async (userInput, sessionId = null, request = null) =>
       red_flags: cleanStringArray(geminiResult.red_flags || []),
       scam_type_indicators: cleanStringArray(geminiResult.scam_type_indicators || []),
       community_warnings: cleanStringArray(geminiResult.community_warnings || []),
-      sources_used: cleanSources(geminiResult.sources_used || []),
 
       // Add legacy fields for backward compatibility
       category: geminiResult.safety_level === 'DANGEROUS' ? 'SCAM' :
@@ -450,6 +538,15 @@ export const analyzeUrl = async (userInput, sessionId = null, request = null) =>
   }, request);
 
   console.log(`✅ Analysis completed for: ${userInput}`);
+
+  // Debug log the final result
+  debugLog('ANALYSIS_COMPLETE', {
+    userInput,
+    result,
+    processingTime: Date.now() - startTime,
+    cached,
+    success: apiSuccess
+  });
 
   // Send completion progress updates
   if (sessionId) {

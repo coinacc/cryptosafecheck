@@ -177,7 +177,6 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
 
   const keyVerificationSteps = result.key_verification_steps || [];
   const safeAlternatives = result.safe_alternatives || [];
-  const sourcesUsed = result.sources_used || [];
   const rateLimit = result.rateLimit;
 
   // Cache information (for internal use only - not displayed to paid users)
@@ -271,6 +270,11 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
             {getSafetyIcon(safetyLevel)}
             <div>
               <h1 className={`text-xl font-bold mb-2 ${getTextColorPrimary(safetyLevel)}`}>{projectName}</h1>
+              {result._input && (
+                <div className="text-xs text-cyber-400 mb-2">
+                  ✓ Analyzed: {result._input}
+                </div>
+              )}
               <div className={`flex flex-wrap items-center gap-2 text-sm ${getTextColorTertiary(safetyLevel)}`}>
                 <span>{projectType}</span>
                 {blockchainNetwork && (
@@ -512,52 +516,6 @@ const CryptoScannerResults = ({ result, onAnalyzeAgain, isAnalyzing, onRefreshAn
         </div>
       )}
 
-      {/* Sources & Research */}
-      <div className="bg-void-800/30 rounded-lg border border-cyber-400/20 p-6">
-        <h2 className="text-lg font-bold mb-4 flex items-center text-white">
-          <Search className="w-5 h-5 mr-2 text-cyber-400" />
-          Sources & Research
-          <HelpTooltip explanation="Our AI analyzes multiple data sources to provide comprehensive risk assessment: official project websites, social media accounts, blockchain explorers, community discussions, regulatory databases, security audit reports, and financial data. More diverse sources lead to more accurate and reliable scam detection results.">
-            <HelpCircle className="w-4 h-4 ml-2 text-cyber-300 hover:text-cyber-100 transition-colors" />
-          </HelpTooltip>
-        </h2>
-        <div className="text-sm text-cyber-300 mb-3">
-          Our AI analyzed the following sources to provide this comprehensive assessment:
-        </div>
-        {sourcesUsed.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {sourcesUsed.map((source, index) => {
-              // Handle both old string format and new object format
-              const sourceName = typeof source === 'string' ? source : source.name;
-              const sourceUrl = typeof source === 'object' ? source.url : null;
-
-              if (sourceUrl) {
-                return (
-                  <a
-                    key={index}
-                    href={sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1 bg-neon-900/10 text-neon-400 hover:text-neon-300 rounded-md text-sm border border-neon-500/30 transition-colors cursor-pointer"
-                  >
-                    {formatText(sourceName)}
-                  </a>
-                );
-              } else {
-                return (
-                  <span key={index} className="px-3 py-1 bg-cyber-900/20 text-cyber-200 rounded-md text-sm border border-cyber-500/30">
-                    {formatText(sourceName)}
-                  </span>
-                );
-              }
-            })}
-          </div>
-        ) : (
-          <div className="text-sm text-cyber-400 italic">
-            Sources information not available for this analysis.
-          </div>
-        )}
-      </div>
 
       {/* Clean Footer */}
       <div className="bg-void-800/30 rounded-lg border border-cyber-400/20 p-6 text-center">

@@ -452,56 +452,69 @@ export default function Home() {
             <div className="max-w-4xl mx-auto">
               <div className="bg-void-800/30 border border-cyber-400/20 rounded-2xl p-4 sm:p-6 md:p-8">
                 <form onSubmit={handleSubmit}>
-                  {/* Enhanced Input field */}
+                  {/* Enhanced Input field with integrated button */}
                   <div className="relative mb-4 sm:mb-6">
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={url}
-                        onChange={(e) => setUrl(e.target.value)}
-                        placeholder="Enter crypto project URL or name..."
-                        disabled={isAnalyzing}
-                        autoFocus
-                        className="w-full p-3 sm:p-4 md:p-5 pr-12 sm:pr-14 bg-void-900/50 border border-cyber-500/30 text-white rounded-xl focus:border-neon-500 focus:outline-none transition-colors text-base sm:text-lg placeholder-void-400 hover:border-cyber-400/50 min-h-[44px]"
-                      />
-                      {url && (
-                        <button
-                          type="button"
-                          onClick={handleClear}
-                          className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-void-400 hover:text-neon-400 transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                          aria-label="Clear input"
-                        >
-                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      )}
+                    <div className="flex gap-3 sm:gap-4">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          value={url}
+                          onChange={(e) => setUrl(e.target.value)}
+                          placeholder="Enter project name, symbol, or paste CoinGecko/CoinMarketCap URL..."
+                          disabled={isAnalyzing}
+                          autoFocus
+                          className="w-full p-4 sm:p-5 md:p-6 pr-12 sm:pr-14 bg-gradient-to-r from-void-900/80 to-void-800/80 border-2 border-cyber-400/50 text-white rounded-2xl focus:border-neon-400 focus:ring-2 focus:ring-neon-400/20 focus:outline-none transition-all duration-300 text-lg sm:text-xl font-medium placeholder-void-300 hover:border-cyber-300/70 hover:shadow-lg hover:shadow-cyber-500/10 min-h-[60px] sm:min-h-[68px]"
+                        />
+                        {url && (
+                          <button
+                            type="button"
+                            onClick={handleClear}
+                            className="absolute right-4 sm:right-5 top-1/2 transform -translate-y-1/2 text-void-400 hover:text-neon-400 transition-colors p-2 min-h-[50px] min-w-[50px] flex items-center justify-center rounded-lg hover:bg-void-700/50"
+                            aria-label="Clear input"
+                          >
+                            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={!url.trim() || isAnalyzing}
+                        className="px-6 sm:px-8 py-4 sm:py-5 md:py-6 font-bold text-lg sm:text-xl rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed bg-cyber-600 text-white border-2 border-cyber-400/50 hover:bg-cyber-500 hover:border-cyber-300/70 hover:shadow-lg hover:shadow-cyber-500/20 min-h-[60px] sm:min-h-[68px] flex items-center justify-center whitespace-nowrap"
+                      >
+                        {isAnalyzing ? (
+                          <div className="flex items-center gap-2">
+                            <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span className="hidden sm:inline">Analyzing</span>
+                          </div>
+                        ) : (
+                          'Analyze'
+                        )}
+                      </button>
                     </div>
                   </div>
 
-                  {/* Enhanced Analysis Button */}
-                  <div className="flex justify-center">
-                    <button
-                      type="submit"
-                      disabled={!url.trim() || isAnalyzing}
-                      className="group relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 font-bold text-base sm:text-lg rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden min-h-[44px]"
-                    >
-                      {isAnalyzing ? (
-                        <span className="flex items-center justify-center gap-2 sm:gap-3 bg-cyber-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl border border-cyber-400/30">
-                          <svg className="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          <span>Analyzing...</span>
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center bg-cyber-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl border border-cyber-400/30 group-hover:bg-cyber-500 transition-colors">
-                          <span className="hidden xs:inline">🛡️ Analyze for Scams</span>
-                          <span className="xs:hidden">🛡️ Scan</span>
-                        </span>
-                      )}
-                    </button>
+                  {/* Prominent Tip */}
+                  <div className="mb-6 sm:mb-8">
+                    <div className="bg-gradient-to-r from-neon-900/20 to-cyber-900/20 border border-neon-400/30 rounded-lg p-4 sm:p-5">
+                      <div className="flex items-start space-x-3 text-center sm:text-left">
+                        <div className="text-neon-400 text-xl sm:text-2xl">💡</div>
+                        <div className="flex-1">
+                          <div className="text-sm sm:text-base font-medium text-neon-200 mb-1">
+                            Pro Tip for Maximum Accuracy
+                          </div>
+                          <div className="text-xs sm:text-sm text-cyber-200">
+                            For projects with similar names, paste a <span className="font-semibold text-neon-300">CoinGecko or CoinMarketCap URL</span> for 100% accurate identification
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+
                 </form>
 
                 {/* Security Features Grid */}
@@ -521,8 +534,8 @@ export default function Home() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
-                    <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">Real-time Intelligence</h3>
-                    <p className="text-xs sm:text-sm text-void-300">Live data from multiple blockchain networks</p>
+                    <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">Precise Analysis</h3>
+                    <p className="text-xs sm:text-sm text-void-300">Supports direct URLs for 100% accurate project identification</p>
                   </div>
                   <div className="text-center">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 bg-bitcoin-600 rounded-xl flex items-center justify-center mx-auto mb-3">
