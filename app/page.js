@@ -416,43 +416,28 @@ export default function Home() {
                 AI-powered analysis of crypto projects, tokens, and websites. Get comprehensive risk assessments in seconds using advanced machine learning and blockchain intelligence.
               </p>
 
-              {/* Threat Level Indicator */}
-              <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 bg-void-800/50 px-4 sm:px-6 py-3 rounded-full border border-cyber-400/30">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-neon-500 rounded-full animate-pulse"></div>
-                  <span className="text-xs sm:text-sm font-medium text-neon-400">THREAT LEVEL: MONITORING</span>
-                </div>
-                <div className="hidden sm:block w-px h-4 bg-cyber-500/30"></div>
-                <span className="text-xs text-cyber-300">Real-time scam detection active</span>
-              </div>
 
               {/* Live Stats Display */}
               {liveStats && (
                 <div className="mt-6 sm:mt-8 bg-void-800/30 rounded-xl p-4 sm:p-6 border border-cyber-400/20">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                  <div className="grid grid-cols-3 gap-4 sm:gap-6">
                     <div className="text-center">
                       <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1">
-                        {liveStats.totalScans.toLocaleString()}
+                        {liveStats.totalAnalyses?.toLocaleString() || '0'}
                       </div>
-                      <div className="text-xs text-cyber-300">Total Scans</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-bitcoin-300 mb-1">
-                        {liveStats.scamsDetected.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-cyber-300">Scams Detected</div>
+                      <div className="text-xs text-cyber-300">Total Analyses</div>
                     </div>
                     <div className="text-center">
                       <div className="text-xl sm:text-2xl md:text-3xl font-bold text-neon-300 mb-1">
-                        {liveStats.successRate}%
+                        {liveStats.successRate || '100'}%
                       </div>
                       <div className="text-xs text-cyber-300">Success Rate</div>
                     </div>
                     <div className="text-center">
                       <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1">
-                        {liveStats.todayScans}
+                        {liveStats.todayAnalyses || 0}
                       </div>
-                      <div className="text-xs text-cyber-300">Today's Scans</div>
+                      <div className="text-xs text-cyber-300">Today's Analyses</div>
                     </div>
                   </div>
                   <div className="flex items-center justify-center mt-4 text-xs text-void-400">
@@ -474,7 +459,7 @@ export default function Home() {
                         type="text"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
-                        placeholder="Enter crypto project URL, contract address, or name..."
+                        placeholder="Enter crypto project URL or name..."
                         disabled={isAnalyzing}
                         autoFocus
                         className="w-full p-3 sm:p-4 md:p-5 pr-12 sm:pr-14 bg-void-900/50 border border-cyber-500/30 text-white rounded-xl focus:border-neon-500 focus:outline-none transition-colors text-base sm:text-lg placeholder-void-400 hover:border-cyber-400/50 min-h-[44px]"
@@ -568,41 +553,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Popular Projects & Examples */}
-            <div className="max-w-4xl mx-auto mt-16">
-              <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-gradient-cyber mb-3">Popular Analysis Targets</h3>
-                <p className="text-void-300">Click any project to start instant analysis</p>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {[
-                  { name: 'SafeMoon', risk: 'high', icon: '⚠️' },
-                  { name: 'DOGE', risk: 'medium', icon: '🐕' },
-                  { name: 'Uniswap', risk: 'low', icon: '🦄' },
-                  { name: 'coinbase.com', risk: 'low', icon: '🏦' },
-                  { name: 'hyperliquid.xyz', risk: 'medium', icon: '💧' }
-                ].map((example) => (
-                  <button
-                    key={example.name}
-                    type="button"
-                    onClick={() => handleQuickAnalysis(example.name)}
-                    disabled={isAnalyzing}
-                    className="bg-void-800/30 border border-cyber-500/20 hover:border-neon-500/40 rounded-xl p-4 text-center transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">{example.icon}</div>
-                    <div className="text-sm font-medium text-white mb-1">{example.name}</div>
-                    <div className={`text-xs px-2 py-1 rounded-full ${
-                      example.risk === 'high' ? 'bg-warning-900/50 text-warning-400 border border-warning-600/30' :
-                      example.risk === 'medium' ? 'bg-bitcoin-900/50 text-bitcoin-400 border border-bitcoin-600/30' :
-                      'bg-neon-900/50 text-neon-400 border border-neon-600/30'
-                    }`}>
-                      {example.risk === 'high' ? 'HIGH RISK' : example.risk === 'medium' ? 'MEDIUM' : 'VERIFIED'}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
 
             {/* Recent Searches */}
             {recentSearches.length > 0 && (

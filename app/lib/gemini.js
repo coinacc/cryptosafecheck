@@ -85,11 +85,23 @@ export const analyzeUrl = async (userInput, sessionId = null, request = null) =>
 
 ### ANALYSIS PROCESS ###
 1. **IDENTIFY**: Determine if input is project name, ticker, contract address, or URL
-2. **SEARCH**: Prioritize official sites → CoinGecko/CMC → GitHub → social media → regulatory sources
-3. **EVALUATE**: Rate each category using search results only (not training data)
-4. **RETURN**: JSON only, no other text
+2. **SPECIAL HANDLING FOR CONTRACT ADDRESSES**: 
+   IMMEDIATELY check if the input looks like a blockchain address:
+   - Ethereum/BSC/Polygon: Starts with "0x" followed by 40 hexadecimal characters
+   - Solana: 32-44 character base58 string (mix of letters/numbers, no spaces/special chars except pump suffix)
+   - Bitcoin: Starts with "1", "3", "bc1", or similar patterns
+   - Any string that looks like a random hash or address (long alphanumeric without spaces/dots)
+   
+   If it matches ANY of these patterns or looks like an address, IMMEDIATELY return:
+   {"status": "contract_address_not_supported", "message": "Contract addresses are not supported. Please search using the project name, website URL, or token symbol instead.", "input_type": "contract_address"}
+   
+   DO NOT attempt to search or analyze contract addresses!
+3. **SEARCH**: Prioritize official sites → CoinGecko/CMC → GitHub → social media → regulatory sources
+4. **EVALUATE**: Rate each category using search results only (not training data)
+5. **RETURN**: JSON only, no other text
 
 ### RULES ###
+- Contract addresses = {"status": "contract_address_not_supported"}
 - Bitcoin/Ethereum base layers = VERY_SAFE
 - No crypto project = {"status": "not_applicable"}
 - Missing data = use most conservative rating + note in explanation
@@ -287,6 +299,27 @@ export const analyzeUrl = async (userInput, sessionId = null, request = null) =>
           marketing: 0,
           legal: 0
         }
+      };
+    }
+
+    // Handle contract address input
+    if (geminiResult.status === "contract_address_not_supported") {
+      return {
+        category: "CONTRACT_ADDRESS",
+        riskScore: 0,
+        riskLevel: "unknown",
+        confidence: 100,
+        summary: geminiResult.message || "Contract addresses are not supported. Please search using the project name, website URL, or token symbol instead.",
+        findings: ["Input identified as a contract address"],
+        redFlags: [],
+        positiveSignals: [],
+        riskBreakdown: {
+          technical: 0,
+          team: 0,
+          marketing: 0,
+          legal: 0
+        },
+        isContractAddress: true
       };
     }
 

@@ -127,7 +127,7 @@ scamapp/
 
 ## 🔧 How It Works
 
-1. **User Input**: User enters a cryptocurrency project name, symbol, website URL, or contract address
+1. **User Input**: User enters a cryptocurrency project name, symbol, or website URL
 2. **Analysis Type**: User chooses between Quick Scan (basic detection) or Full Analysis (comprehensive)
 3. **Pre-check**: System validates if the input is crypto-related
 4. **Cache Check**: System checks if analysis exists in Vercel KV cache
